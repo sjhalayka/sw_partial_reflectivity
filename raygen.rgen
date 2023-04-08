@@ -39,7 +39,6 @@ void main()
 	float tmax = 10000.0;
 
 	vec3 color = vec3(0.0);
-	vec3 base_color = vec3(0.0);
 
 	int count = 0;
 
@@ -47,34 +46,25 @@ void main()
 		traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);
 		vec3 hitColor = rayPayload.color;
 
-		if(count == 0)
-			base_color = hitColor;
-
-		if (rayPayload.distance < 0.0f) {
-			color += hitColor;
-			count++;
-			break;
-		} else if (rayPayload.reflector == 1.0f) {
-
+		color += hitColor;
 		count++;
 
-		
-			const vec4 hitPos = origin + direction * rayPayload.distance;
+		if (rayPayload.distance < 0.0f)
+		{
+			break;
+		}
+		else if (rayPayload.reflector == 1.0f) 
+		{
+x			const vec4 hitPos = origin + direction * rayPayload.distance;
 			origin.xyz = hitPos.xyz + rayPayload.normal * 0.001f;
 			direction.xyz = reflect(direction.xyz, rayPayload.normal);
-
-		color += hitColor;
-
-		} else {
-			color += hitColor;
-			count++;
+		}
+		else
+		{
 			break;
 		}
 
 	}
-
-	color = (color + base_color) / 2.0;
-
 
 	if(count >= 2)
 	color /= count;
