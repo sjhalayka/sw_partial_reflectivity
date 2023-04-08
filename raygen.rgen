@@ -55,7 +55,7 @@ void main()
 		}
 		else if (rayPayload.reflector == 1.0f) 
 		{
-x			const vec4 hitPos = origin + direction * rayPayload.distance;
+			const vec4 hitPos = origin + direction * rayPayload.distance;
 			origin.xyz = hitPos.xyz + rayPayload.normal * 0.001f;
 			direction.xyz = reflect(direction.xyz, rayPayload.normal);
 		}
