@@ -39,15 +39,21 @@ void main()
 	float tmax = 10000.0;
 
 	vec3 color = vec3(0.0);
+	vec3 base_color = vec3(0.0);
 
 	int count = 0;
 
-	for (int i = 0; i < MAX_RECURSION; i++) {
+	for (int i = 0; i < MAX_RECURSION; i++)
+	{
 		traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);
 		vec3 hitColor = rayPayload.color;
 
+		if(count == 0)
+			base_color = hitColor;
+
 		color += hitColor;
 		count++;
+
 
 		if (rayPayload.distance < 0.0f)
 		{
@@ -61,6 +67,7 @@ void main()
 		}
 		else
 		{
+
 			break;
 		}
 
@@ -68,6 +75,8 @@ void main()
 
 	if(count >= 2)
 	color /= count;
+
+	color = (color + base_color) / 2.0;
 
 	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(color, 0.0));
 }
