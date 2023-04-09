@@ -7,6 +7,7 @@ struct RayPayload {
 	float distance;
 	vec3 normal;
 	float reflector;
+	vec2 uv;
 };
 
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;
@@ -70,6 +71,8 @@ void main()
 	rayPayload.color = v0.color.rgb * vec3(dot_product);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
+
+	rayPayload.uv = v0.uv;
 
 	// Objects with full white vertex color are treated as reflectors
 	rayPayload.reflector = 1.0;//((v0.color.r == 1.0f) && (v0.color.g == 1.0f) && (v0.color.b == 1.0f)) ? 1.0f : 0.0f; 

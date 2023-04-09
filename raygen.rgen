@@ -10,12 +10,14 @@ layout(binding = 2, set = 0) uniform CameraProperties
 	vec4 lightPos;
 } cam;
 
+layout(binding = 3) uniform sampler2D texSampler;
 
 struct RayPayload {
 	vec3 color;
 	float distance;
 	vec3 normal;
 	float reflector;
+	vec2 uv;
 };
 
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
@@ -54,7 +56,6 @@ void main()
 		color += hitColor;
 		count++;
 
-
 		if (rayPayload.distance < 0.0f)
 		{
 			break;
@@ -67,10 +68,8 @@ void main()
 		}
 		else
 		{
-
 			break;
 		}
-
 	}
 
 	if(count >= 2)
