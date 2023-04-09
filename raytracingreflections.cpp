@@ -79,7 +79,7 @@ public:
 //		scene.loadFromFile(getAssetPath() + "models/deer.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		/*scene.loadFromFile(getAssetPath() + "models/shadowscene_fire.gltf", vulkanDevice, queue, glTFLoadingFlags);*/
 
-		scene.loadFromFile(getAssetPath() + "models/deer_plus_reflection_scene.gltf", vulkanDevice, queue, glTFLoadingFlags);
+		scene.loadFromFile(getAssetPath() + "models/game/ABeautifulGame.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
 
 		VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
