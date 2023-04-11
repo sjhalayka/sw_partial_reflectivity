@@ -48,7 +48,7 @@ public:
 		camera.type = Camera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-		camera.setTranslation(glm::vec3(0.0f, 0.5f, -2.0f));
+		camera.setTranslation(glm::vec3(0.0f, 0.0f, -5.0f));
 		enableExtensions();
 	}
 
@@ -79,7 +79,8 @@ public:
 //		scene.loadFromFile(getAssetPath() + "models/deer.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		/*scene.loadFromFile(getAssetPath() + "models/shadowscene_fire.gltf", vulkanDevice, queue, glTFLoadingFlags);*/
 
-		scene.loadFromFile(getAssetPath() + "models/game/ABeautifulGame.gltf", vulkanDevice, queue, glTFLoadingFlags);
+		// https://github.com/sjhalayka/sw_partial_reflectivity/blob/main/ABeautifulGame.zip
+		scene.loadFromFile(getAssetPath() + "models/ped_tex/ped_tex.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
 
 		VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
