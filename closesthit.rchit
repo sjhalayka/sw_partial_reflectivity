@@ -99,5 +99,6 @@ void main()
 		rayPayload.color *= 0.3;
 	}
 
-	rayPayload.reflector = 1.0;
+	// This will be a texture sample
+	rayPayload.reflector = 0.5;
 }
