@@ -88,8 +88,9 @@ void main()
 
 		vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
 		vec3 biased_origin = origin + normal * 0.01;
-		
+
 		// Trace shadow ray and offset indices to match shadow hit/miss shader group indices
+		shadowed = true;
 		traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
 	}
 
