@@ -25,7 +25,7 @@ layout (constant_id = 0) const int MAX_RECURSION = 0;
 
 void main() 
 {
-const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
+	const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
 	const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
 	vec2 d = inUV * 2.0 - 1.0;
 
@@ -56,27 +56,24 @@ const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
 		}
 
 		color += hitColor;
-		
 		count++;
 
 		if (rayPayload.distance < 0.0f)
 		{
 			break;
 		}
-		else if (rayPayload.reflector != 0.0f) 
+		else if (rayPayload.reflector != 0.0f)
 		{
 			const vec4 hitPos = origin + direction * rayPayload.distance;
 			origin.xyz = hitPos.xyz + rayPayload.normal * 0.001f;
 			direction.xyz = reflect(direction.xyz, rayPayload.normal);
 		}
-		else
-		{
-			break;
-		}
 	}
 
-	if(count >= 2)
-	color /= count;
+	if(count > 1)
+	{
+		color /= count;
+	}
 
 	color = mix(base_color, color, base_reflectivity);
 
