@@ -94,7 +94,9 @@ void main()
 	}
 
 	if (shadowed)
+	{
 		rayPayload.color *= 0.3;
+	}
 
 	rayPayload.reflector = 1.0;
 }
