@@ -48,6 +48,7 @@ Vertex unpack(uint index)
 	Vertex v;
 	v.pos = d0.xyz;
 	v.normal = vec3(d0.w, d1.x, d1.y);
+	v.uv = vec2(d1.z, d1.w);
 	v.color = vec4(d2.x, d2.y, d2.z, 1.0);
 
 	return v;
@@ -75,29 +76,25 @@ void main()
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
 
-	// Shadow casting
-	float tmin = 0.001;
-	float tmax = 1000.0;
-
-	vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
-	vec3 biased_origin = origin + normal * 0.01;
-
-
-	shadowed = true;
-	
-	
-	// Trace shadow ray and offset indices to match shadow hit/miss shader group indices
-	traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
-
-
 	if(dot(normal, lightVector) < 0.0)
+	{
 		shadowed = true;
+	}
+	else
+	{
+		// Shadow casting
+		float tmin = 0.001;
+		float tmax = 1000.0;
 
-	if (shadowed) {
-		rayPayload.color *= 0.3;
+		vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
+		vec3 biased_origin = origin + normal * 0.01;
+		
+		// Trace shadow ray and offset indices to match shadow hit/miss shader group indices
+		traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
 	}
 
+	if (shadowed)
+		rayPayload.color *= 0.3;
 
-	// Objects with full white vertex color are treated as reflectors
-	rayPayload.reflector = 1.0;//((v0.color.r == 1.0f) && (v0.color.g == 1.0f) && (v0.color.b == 1.0f)) ? 1.0f : 0.0f;
+	rayPayload.reflector = 1.0;
 }
