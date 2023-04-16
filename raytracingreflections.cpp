@@ -1,13 +1,3 @@
-/*
-* Vulkan Example - Hardware accelerated ray tracing example for doing reflections
-*
-* Renders a complex scene doing recursion inside the shaders for creating reflections
-*
-* Copyright (C) 2019-2020 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
-
 #include "VulkanRaytracingSample.h"
 #include "VulkanglTFModel.h"
 
@@ -42,13 +32,13 @@ public:
 	// This sample is derived from an extended base class that saves most of the ray tracing setup boiler plate
 	VulkanExample() : VulkanRaytracingSample()
 	{
-		title = "Ray tracing reflections";
+		title = "Ray tracing shadows & reflections";
 		timerSpeed *= 0.5f;
 		camera.rotationSpeed *= 0.25f;
 		camera.type = Camera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-		camera.setTranslation(glm::vec3(0.0f, 0.0f, -5.0f));
+		camera.setTranslation(glm::vec3(0.0f, 0.0f, -2.0f));
 		enableExtensions();
 	}
 
@@ -75,12 +65,9 @@ public:
 		// The shaders are accessing the vertex and index buffers of the scene, so the proper usage flag has to be set on the vertex and index buffers for the scene
 		vkglTF::memoryPropertyFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 		const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
-//		scene.loadFromFile(getAssetPath() + "models/reflection_scene.gltf", vulkanDevice, queue, glTFLoadingFlags);
-//		scene.loadFromFile(getAssetPath() + "models/deer.gltf", vulkanDevice, queue, glTFLoadingFlags);
-		/*scene.loadFromFile(getAssetPath() + "models/shadowscene_fire.gltf", vulkanDevice, queue, glTFLoadingFlags);*/
-
-		// https://github.com/sjhalayka/sw_partial_reflectivity/blob/main/ABeautifulGame.zip
-		scene.loadFromFile(getAssetPath() + "models/ped_tex/ped_tex.gltf", vulkanDevice, queue, glTFLoadingFlags);
+		scene.loadFromFile(getAssetPath() + "models/reflection_scene.gltf", vulkanDevice, queue, glTFLoadingFlags);
+	//	scene.loadFromFile(getAssetPath() + "models/ped_tex/ped_tex.gltf", vulkanDevice, queue, glTFLoadingFlags);
+		//scene.loadFromFile("c:/temp/ped_tex/ped_tex.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
 
 		VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
@@ -268,13 +255,13 @@ public:
 		VK_CHECK_RESULT(vkGetRayTracingShaderGroupHandlesKHR(device, pipeline, 0, groupCount, sbtSize, shaderHandleStorage.data()));
 
 		createShaderBindingTable(shaderBindingTables.raygen, 1);
-		createShaderBindingTable(shaderBindingTables.miss, 1);
+		createShaderBindingTable(shaderBindingTables.miss, 2);
 		createShaderBindingTable(shaderBindingTables.hit, 1);
 
 		// Copy handles
 		memcpy(shaderBindingTables.raygen.mapped, shaderHandleStorage.data(), handleSize);
-		memcpy(shaderBindingTables.miss.mapped, shaderHandleStorage.data() + handleSizeAligned, handleSize);
-		memcpy(shaderBindingTables.hit.mapped, shaderHandleStorage.data() + handleSizeAligned * 2, handleSize);
+		memcpy(shaderBindingTables.miss.mapped, shaderHandleStorage.data() + handleSizeAligned, handleSize * 2);
+		memcpy(shaderBindingTables.hit.mapped, shaderHandleStorage.data() + handleSizeAligned * 3, handleSize);
 	}
 
 	/*
@@ -387,6 +374,19 @@ public:
 			shaderGroups.push_back(shaderGroup);
 		}
 
+		// Shadow miss group
+		{
+			shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/shadow.rmiss.spv", VK_SHADER_STAGE_MISS_BIT_KHR));
+			VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+			shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+			shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+			shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+			shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+			shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+			shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+			shaderGroups.push_back(shaderGroup);
+		}
+
 		// Closest hit group
 		{
 			shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/closesthit.rchit.spv", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR));
@@ -405,7 +405,7 @@ public:
 		rayTracingPipelineCI.pStages = shaderStages.data();
 		rayTracingPipelineCI.groupCount = static_cast<uint32_t>(shaderGroups.size());
 		rayTracingPipelineCI.pGroups = shaderGroups.data();
-		rayTracingPipelineCI.maxPipelineRayRecursionDepth = 4;
+		rayTracingPipelineCI.maxPipelineRayRecursionDepth = maxRecursion + 1;
 		rayTracingPipelineCI.layout = pipelineLayout;
 		VK_CHECK_RESULT(vkCreateRayTracingPipelinesKHR(device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline));
 	}
@@ -529,7 +529,7 @@ public:
 	{
 		uniformData.projInverse = glm::inverse(camera.matrices.perspective);
 		uniformData.viewInverse = glm::inverse(camera.matrices.view);
-		uniformData.lightPos = glm::vec4(cos(glm::radians(timer * 360.0f)) * 40.0f, -20.0f + sin(glm::radians(timer * 360.0f)) * 20.0f, 25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f, 0.0f);
+		uniformData.lightPos = glm::vec4(cos(glm::radians(timer * 360.0f)) * 40.0f, -50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f, 25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f, 0.0f);
 		// Pass the vertex size to the shader for unpacking vertices
 		uniformData.vertexSize = sizeof(vkglTF::Vertex);
 		memcpy(ubo.mapped, &uniformData, sizeof(uniformData));
