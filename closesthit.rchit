@@ -7,10 +7,10 @@ struct RayPayload {
 	float distance;
 	vec3 normal;
 	float reflector;
-	vec2 uv;
 };
 
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;
+layout(location = 2) rayPayloadEXT bool shadowed;
 
 hitAttributeEXT vec2 attribs;
 
@@ -64,16 +64,40 @@ void main()
 	// Interpolate normal
 	const vec3 barycentricCoords = vec3(1.0f - attribs.x - attribs.y, attribs.x, attribs.y);
 	vec3 normal = normalize(v0.normal * barycentricCoords.x + v1.normal * barycentricCoords.y + v2.normal * barycentricCoords.z);
+	vec3 pos = v0.pos * barycentricCoords.x + v1.pos * barycentricCoords.y + v2.pos * barycentricCoords.z;
 
 	// Basic lighting
 	vec3 lightVector = normalize(ubo.lightPos.xyz);
-	float dot_product = max(dot(lightVector, normal), 0.6);
-	rayPayload.color = v0.color.rgb * vec3(dot_product);
+	vec3 baseColor = max(vec3(0.1), v0.color.rgb);
+	float dot_product = max(dot(lightVector, normal), 0.5);
+
+	rayPayload.color = baseColor * dot_product;
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
 
-	rayPayload.uv = v0.uv;
+	// Shadow casting
+	float tmin = 0.001;
+	float tmax = 1000.0;
+
+	vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
+	vec3 biased_origin = origin + normal * 0.01;
+
+
+	shadowed = true;
+	
+	
+	// Trace shadow ray and offset indices to match shadow hit/miss shader group indices
+	traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
+
+
+	if(dot(normal, lightVector) < 0.0)
+		shadowed = true;
+
+	if (shadowed) {
+		rayPayload.color *= 0.3;
+	}
+
 
 	// Objects with full white vertex color are treated as reflectors
-	rayPayload.reflector = 1.0;//((v0.color.r == 1.0f) && (v0.color.g == 1.0f) && (v0.color.b == 1.0f)) ? 1.0f : 0.0f; 
+	rayPayload.reflector = 1.0;//((v0.color.r == 1.0f) && (v0.color.g == 1.0f) && (v0.color.b == 1.0f)) ? 1.0f : 0.0f;
 }
