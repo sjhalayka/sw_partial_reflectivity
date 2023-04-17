@@ -73,7 +73,7 @@ void main()
 	vec3 baseColor = max(vec3(0.0), v0.color.rgb);
 	float dot_product = max(dot(lightVector, normal), 0.0);
 
-	rayPayload.color =	baseColor * dot_product; // vec3(uv, 0.0);
+	rayPayload.color = baseColor * dot_product; // vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
 
