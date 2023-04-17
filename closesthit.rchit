@@ -67,14 +67,13 @@ void main()
 	vec3 normal = normalize(v0.normal * barycentricCoords.x + v1.normal * barycentricCoords.y + v2.normal * barycentricCoords.z);
 	vec3 pos = v0.pos * barycentricCoords.x + v1.pos * barycentricCoords.y + v2.pos * barycentricCoords.z;
 	vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
-	//vec2 uv = (v0.uv + v1.uv + v2.uv) / 3;
 
 	// Basic lighting
 	vec3 lightVector = normalize(ubo.lightPos.xyz);
 	vec3 baseColor = max(vec3(0.1), v0.color.rgb);
 	float dot_product = max(dot(lightVector, normal), 0.5);
 
-	rayPayload.color = vec3(uv, 0.0);//baseColor * dot_product; // vec3(uv_, 0.0);
+	rayPayload.color =	baseColor * dot_product; // vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
 
