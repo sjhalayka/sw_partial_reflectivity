@@ -62,7 +62,7 @@ void main()
 	Vertex v1 = unpack(index.y);
 	Vertex v2 = unpack(index.z);
 
-	// Interpolate normal
+	// Interpolate
 	const vec3 barycentricCoords = vec3(1.0f - attribs.x - attribs.y, attribs.x, attribs.y);
 	vec3 normal = normalize(v0.normal * barycentricCoords.x + v1.normal * barycentricCoords.y + v2.normal * barycentricCoords.z);
 	vec3 pos = v0.pos * barycentricCoords.x + v1.pos * barycentricCoords.y + v2.pos * barycentricCoords.z;
