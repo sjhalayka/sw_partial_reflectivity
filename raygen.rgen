@@ -52,8 +52,10 @@ void main()
 			base_color = hitColor;
 			base_reflectivity = rayPayload.reflector;
 		}
-
-		color += hitColor;
+		else
+		{
+			color += hitColor;
+		}
 
 		if (rayPayload.distance < 0.0)
 		{
