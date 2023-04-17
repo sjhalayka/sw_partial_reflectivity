@@ -65,6 +65,10 @@ void main()
 			origin.xyz = hitPos.xyz + rayPayload.normal * 0.001f;
 			direction.xyz = reflect(direction.xyz, rayPayload.normal);
 		}
+		else
+		{
+			break;
+		}
 	}
 
 	color = mix(base_color, color, base_reflectivity);
