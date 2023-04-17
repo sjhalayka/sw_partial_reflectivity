@@ -71,7 +71,7 @@ void main()
 	// Basic lighting
 	vec3 lightVector = normalize(ubo.lightPos.xyz);
 	vec3 baseColor = max(vec3(0.0), v0.color.rgb);
-	float dot_product = max(dot(lightVector, normal), 0.5);
+	float dot_product = max(dot(lightVector, normal), 0.0);
 
 	rayPayload.color =	baseColor * dot_product; // vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
@@ -101,5 +101,5 @@ void main()
 	}
 
 	// This will be a texture sample
-	rayPayload.reflector = 0.5;
+	rayPayload.reflector = 0.125;
 }
