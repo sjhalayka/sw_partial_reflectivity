@@ -59,11 +59,11 @@ Vertex unpack(uint index)
 vec3 LightIntensity = vec3(1.0, 1.0, 1.0);
 vec3 MaterialKs = vec3(1.0, 0.5, 0.0);
 vec3 MaterialKa = vec3(0.0, 0.025, 0.075);
-float MaterialShininess = 1.0;
+float MaterialShininess = 10.0;
 
 
 
-vec3 phongModelDiffAndSpec(bool do_specular, vec3 MaterialKd, vec3 lp, vec3 Position, vec3 vert_normal)
+vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 MaterialKd, vec3 lp, vec3 Position, vec3 vert_normal)
 {
   vec3 normal_vector = normalize( vert_normal );
 
@@ -86,7 +86,7 @@ vec3 phongModelDiffAndSpec(bool do_specular, vec3 MaterialKd, vec3 lp, vec3 Posi
     vec3 ret = diffuse + MaterialKa*k;
 
     if(do_specular)
-        ret = ret + spec;
+        ret = ret + spec*reflectivity;
     
     return ret;
 }
@@ -113,14 +113,16 @@ void main()
 	// Basic lighting
 	vec3 lightVector = normalize(ubo.lightPos.xyz);
 //	vec3 baseColor = max(vec3(0.0), v0.color.rgb);
-	float dot_product = max(dot(lightVector, normal), 0.0);
+//	float dot_product = max(dot(lightVector, normal), 0.0);
 
-	rayPayload.color = phongModelDiffAndSpec(true, color, ubo.lightPos.xyz, pos, normal);//baseColor * dot_product; // vec3(uv, 0.0);
+	// This will be a texture sample
+	rayPayload.reflector = 0.5;
+
+	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal);//baseColor * dot_product; // vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
 	
-	// This will be a texture sample
-	rayPayload.reflector = 0.125;
+
 
 
 
@@ -144,7 +146,7 @@ void main()
 
 	if (shadowed)
 	{
-		rayPayload.color = phongModelDiffAndSpec(false, color, ubo.lightPos.xyz, pos, normal) * 0.3;
+		rayPayload.color = phongModelDiffAndSpec(false, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal) * 0.3;
 	}
 
 }
