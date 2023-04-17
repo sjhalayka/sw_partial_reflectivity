@@ -59,7 +59,7 @@ Vertex unpack(uint index)
 vec3 LightIntensity = vec3(1.0, 1.0, 1.0);
 vec3 MaterialKs = vec3(1.0, 0.5, 0.0);
 vec3 MaterialKa = vec3(0.0, 0.025, 0.075);
-float MaterialShininess = 10.0;
+float MaterialShininess = 1.0;
 
 
 
