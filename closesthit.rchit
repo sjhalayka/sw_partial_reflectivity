@@ -70,7 +70,7 @@ void main()
 
 	// Basic lighting
 	vec3 lightVector = normalize(ubo.lightPos.xyz);
-	vec3 baseColor = max(vec3(0.1), v0.color.rgb);
+	vec3 baseColor = max(vec3(0.0), v0.color.rgb);
 	float dot_product = max(dot(lightVector, normal), 0.5);
 
 	rayPayload.color =	baseColor * dot_product; // vec3(uv, 0.0);
