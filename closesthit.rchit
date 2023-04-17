@@ -56,18 +56,16 @@ Vertex unpack(uint index)
 
 
 
-vec3 LightIntensity = vec3(1.0, 0.0, 0.0);
-vec3 MaterialKd = vec3(1.0, 1.0, 1.0);
+vec3 LightIntensity = vec3(1.0, 1.0, 1.0);
 vec3 MaterialKs = vec3(1.0, 0.5, 0.0);
 vec3 MaterialKa = vec3(0.0, 0.025, 0.075);
 float MaterialShininess = 10.0;
 
 
 
-vec3 phongModelDiffAndSpec(bool do_specular, vec3 lp, vec3 Position, vec3 vert_normal)
+vec3 phongModelDiffAndSpec(bool do_specular, vec3 MaterialKd, vec3 lp, vec3 Position, vec3 vert_normal)
 {
   vec3 normal_vector = normalize( vert_normal );
-
 
     vec3 n = normal_vector;
     vec3 s = normalize(lp.xyz - Position.xyz);
@@ -110,12 +108,14 @@ void main()
 	vec3 pos = v0.pos * barycentricCoords.x + v1.pos * barycentricCoords.y + v2.pos * barycentricCoords.z;
 	vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
 
+	vec3 color = (v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
+
 	// Basic lighting
 	vec3 lightVector = normalize(ubo.lightPos.xyz);
-	vec3 baseColor = max(vec3(0.0), v0.color.rgb);
+//	vec3 baseColor = max(vec3(0.0), v0.color.rgb);
 	float dot_product = max(dot(lightVector, normal), 0.0);
 
-	rayPayload.color = phongModelDiffAndSpec(true, ubo.lightPos.xyz, pos, normal);//baseColor * dot_product; // vec3(uv, 0.0);
+	rayPayload.color = phongModelDiffAndSpec(true, color, ubo.lightPos.xyz, pos, normal);//baseColor * dot_product; // vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
 	
@@ -144,7 +144,7 @@ void main()
 
 	if (shadowed)
 	{
-		rayPayload.color = phongModelDiffAndSpec(false, ubo.lightPos.xyz, pos, normal) * 0.3;
+		rayPayload.color = phongModelDiffAndSpec(false, color, ubo.lightPos.xyz, pos, normal) * 0.3;
 	}
 
 }
