@@ -102,17 +102,17 @@ void main()
 	vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
 
 	// This will be a texture sample
-	vec3 color = (v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
-
-	// Basic lighting
-	vec3 lightVector = normalize(ubo.lightPos.xyz);
+	rayPayload.reflector = 0.125;
 
 	// This will be a texture sample
-	rayPayload.reflector = 0.125;
+	vec3 color = (v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 
 	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal);// vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
+
+	// Basic lighting
+	vec3 lightVector = normalize(ubo.lightPos.xyz);
 
 	if(dot(normal, lightVector) < 0.0)
 	{
