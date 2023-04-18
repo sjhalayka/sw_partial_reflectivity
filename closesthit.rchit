@@ -73,11 +73,10 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec
 	const vec3 diffuse = color * sDotN;
 	vec3 spec = vec3(0.0);
 
-	if( sDotN > 0.0 )
+	if(sDotN > 0.0)
 		spec = MaterialKs * pow( max( dot(r,v), 0.0 ), MaterialShininess );
 
-	float k = (1.0 - sDotN)/2.0;
-	vec3 ret = diffuse + MaterialKa*k;
+	vec3 ret = diffuse + MaterialKa;
 
 	if(do_specular)
 		ret = ret + spec*reflectivity;
