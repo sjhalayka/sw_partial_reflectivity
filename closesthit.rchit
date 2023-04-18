@@ -25,6 +25,8 @@ layout(binding = 2, set = 0) uniform UBO
 layout(binding = 3, set = 0) buffer Vertices { vec4 v[]; } vertices;
 layout(binding = 4, set = 0) buffer Indices { uint i[]; } indices;
 
+
+
 struct Vertex
 {
   vec3 pos;
@@ -56,23 +58,19 @@ Vertex unpack(uint index)
 
 
 
-vec3 LightIntensity = vec3(1.0, 1.0, 1.0);
-vec3 MaterialKs = vec3(1.0, 0.5, 0.0);
-vec3 MaterialKa = vec3(0.0, 0.025, 0.075);
-float MaterialShininess = 10.0;
-
-
-
-vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 MaterialKd, vec3 lp, vec3 Position, vec3 vert_normal)
+// https://github.com/daw42/glslcookbook/blob/master/chapter07/shader/shadowmap.fs
+vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec3 light_pos, vec3 frag_pos, vec3 frag_normal)
 {
-	vec3 normal_vector = normalize( vert_normal );
+	const vec3 MaterialKs = vec3(1.0, 0.5, 0.0);
+	const vec3 MaterialKa = vec3(0.0, 0.025, 0.075);
+	const float MaterialShininess = 10.0;
 
-    vec3 n = normal_vector;
-    vec3 s = normalize(lp.xyz - Position.xyz);
-    vec3 v = normalize(Position.xyz);
-    vec3 r = reflect( -s, n );
-    float sDotN = max( dot(s,n), 0.0 ); // This affects the visibility of shadow edges
-    vec3 diffuse = LightIntensity * MaterialKd * sDotN;
+    const vec3 n = normalize(frag_normal);
+    const vec3 s = normalize(light_pos - frag_pos);
+    const vec3 v = normalize(frag_pos);
+    const vec3 r = reflect( -s, n );
+    const float sDotN = max( dot(s,n), 0.125 ); // This affects the visibility of shadow edges
+    const vec3 diffuse = color * sDotN;
     vec3 spec = vec3(0.0);
 
     if( sDotN > 0.0 )
@@ -86,7 +84,6 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 MaterialKd
     
     return ret;
 }
-
 
 
 
@@ -104,6 +101,7 @@ void main()
 	vec3 pos = v0.pos * barycentricCoords.x + v1.pos * barycentricCoords.y + v2.pos * barycentricCoords.z;
 	vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
 
+	// This will be a texture sample
 	vec3 color = (v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 
 	// Basic lighting
@@ -115,10 +113,6 @@ void main()
 	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal);//baseColor * dot_product; // vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
-	
-
-
-
 
 	if(dot(normal, lightVector) < 0.0)
 	{
