@@ -73,7 +73,7 @@ void main()
 		}
 	}
 
-	color = mix(base_color, base_color + color, base_reflectivity);
+	color = mix(base_color, color, base_reflectivity);
 
 	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(color, 0.0));
 }
