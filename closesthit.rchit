@@ -65,24 +65,24 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec
 	const vec3 MaterialKa = vec3(0.0, 0.025, 0.075);
 	const float MaterialShininess = 10.0;
 
-    const vec3 n = normalize(frag_normal);
-    const vec3 s = normalize(light_pos - frag_pos);
-    const vec3 v = normalize(frag_pos);
-    const vec3 r = reflect( -s, n );
-    const float sDotN = max( dot(s,n), 0.125 ); // This affects the visibility of shadow edges
-    const vec3 diffuse = color * sDotN;
-    vec3 spec = vec3(0.0);
+	const vec3 n = normalize(frag_normal);
+	const vec3 s = normalize(light_pos - frag_pos);
+	const vec3 v = normalize(frag_pos);
+	const vec3 r = reflect( -s, n );
+	const float sDotN = max( dot(s,n), 0.0125 ); // This affects the visibility of shadow edges
+	const vec3 diffuse = color * sDotN;
+	vec3 spec = vec3(0.0);
 
-    if( sDotN > 0.0 )
-        spec = MaterialKs * pow( max( dot(r,v), 0.0 ), MaterialShininess );
+	if( sDotN > 0.0 )
+		spec = MaterialKs * pow( max( dot(r,v), 0.0 ), MaterialShininess );
 
-    float k = (1.0 - sDotN)/2.0;
-    vec3 ret = diffuse + MaterialKa*k;
+	float k = (1.0 - sDotN)/2.0;
+	vec3 ret = diffuse + MaterialKa*k;
 
-    if(do_specular)
-        ret = ret + spec*reflectivity;
+	if(do_specular)
+		ret = ret + spec*reflectivity;
     
-    return ret;
+	return ret;
 }
 
 
@@ -127,8 +127,7 @@ void main()
 		vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
 		vec3 biased_origin = origin + normal * 0.01;
 
-		// Trace shadow ray and offset indices to match shadow hit/miss shader group indices
-		shadowed = true;
+		shadowed = true; // Make sure to set this to the default before tracing the ray!
 		traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
 	}
 
