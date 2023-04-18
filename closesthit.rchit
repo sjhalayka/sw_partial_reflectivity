@@ -69,7 +69,7 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec
 	const vec3 s = normalize(light_pos - frag_pos);
 	const vec3 v = normalize(frag_pos);
 	const vec3 r = reflect( -s, n );
-	const float sDotN = max( dot(s,n), 0.0125 ); // This affects the visibility of shadow edges
+	const float sDotN = max( dot(s,n), 0.0 ); // This second parameter affects the visibility of shadow edges
 	const vec3 diffuse = color * sDotN;
 	vec3 spec = vec3(0.0);
 
