@@ -71,12 +71,12 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 MaterialKd
     vec3 s = normalize(lp.xyz - Position.xyz);
     vec3 v = normalize(Position.xyz);
     vec3 r = reflect( -s, n );
-    float sDotN = max( dot(s,n), 0.5 ); // This affects the visibility of shadows
+    float sDotN = max( dot(s,n), 0.0 ); // This affects the visibility of shadow edges
     vec3 diffuse = LightIntensity * MaterialKd * sDotN;
     vec3 spec = vec3(0.0);
 
     if( sDotN > 0.0 )
-        spec.xyz = MaterialKs.xyz * pow( max( dot(r,v), 0.0 ), MaterialShininess );
+        spec = MaterialKs * pow( max( dot(r,v), 0.0 ), MaterialShininess );
 
     float k = (1.0 - sDotN)/2.0;
     vec3 ret = diffuse + MaterialKa*k;
