@@ -7,6 +7,7 @@ struct RayPayload {
 	float distance;
 	vec3 normal;
 	float reflector;
+	float opacity;
 };
 
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;
@@ -79,7 +80,7 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec
 	vec3 ret = diffuse + MaterialKa;
 
 	if(do_specular)
-		ret = ret + spec*reflectivity;
+		ret = ret + spec;//*reflectivity;
     
 	return ret;
 }
@@ -102,6 +103,7 @@ void main()
 
 	// This will be a texture sample
 	rayPayload.reflector = 0.125;
+	rayPayload.opacity = 0.0125;
 
 	// This will be a texture sample
 	vec3 color = (v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
