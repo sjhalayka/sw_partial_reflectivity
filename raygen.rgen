@@ -10,8 +10,8 @@ struct ray
 	int level;// = 0;
 };
 
-ray rays[31];
-float levels = log(31.0 + 1.0)/log(2.0);
+ray rays[32];
+
 
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
@@ -52,11 +52,11 @@ void main()
 	float tmin = 0.001;
 	float tmax = 10000.0;
 
+	vec3 base_color = vec3(0.0);
 	vec3 color = vec3(0.0);
+	vec3 wall_color = vec3(0.0);
 
 	float base_reflectivity = 0.0;
-
-	
 
 	for(int i = 0; i < 31; i++)
 	{
@@ -70,7 +70,7 @@ void main()
 	rays[0].direction = direction;
 	rays[0].origin = origin;
 	rays[0].in_use = true;
-	rays[0].level = 1;
+	rays[0].level =	1;
 	
 	while(true)
 	{
@@ -80,39 +80,45 @@ void main()
 		{
 			if(rays[i].in_use)
 			{
+				count++;
+
 				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
 				const vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
+
+				if(rays[i].level == 1)
+				{
+					rays[i].level++;
+					base_color = rayPayload.color;
+					base_reflectivity = rayPayload.reflector;
+				}
+				else
+				{
+					color += rayPayload.color;
+				}
 
 				// hit the wall
 				if(rayPayload.distance == -1.0)
 				{
-					color += rayPayload.color;
 					rays[i].in_use = false;
 					continue;
 				}
-				else
-				{
-					color += rayPayload.opacity*rayPayload.color;
-					rays[i].in_use = true;
-					count++;
-				}
+
+
 
 				// entering
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
 				{
-					rays[i].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
-					//rays[i].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
+					rays[i].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
+
+					rays[i].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
 				}
 				// exiting
 				else
 				{
 					rays[i].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
+					
 					//rays[i].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);			
 				}
-
-
-
-
 			}
 		}
 
@@ -121,45 +127,12 @@ void main()
 			break;
 		}
 
-/*
-
-		if(i == 0)
-		{
-			i++;
-			base_color = rayPayload.opacity*hitColor;
-			base_reflectivity = rayPayload.reflector;
-		}
-
-		color += rayPayload.opacity*hitColor;
-
-		if (rayPayload.opacity < 1.0)
-		{
-			const vec4 hitPos = origin + direction * rayPayload.distance;
-			
-			if(dot(direction.xyz, rayPayload.normal) < 0.0)
-			{
-				origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
-				//direction.xyz = refract(direction.xyz, rayPayload.normal, 1.0);
-			}
-			else
-			{
-				origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
-				//direction.xyz = refract(direction.xyz, -rayPayload.normal, 1.0);
-			}
-		}
-
-		else if (rayPayload.reflector > 0.0)
-		{
-			const vec4 hitPos = origin + direction * rayPayload.distance;
-			origin.xyz = hitPos.xyz + rayPayload.normal * 0.001f;
-			direction.xyz = reflect(direction.xyz, rayPayload.normal);
-		}
-
-		*/
 
 	}
 
-	//color = mix(base_color, color, base_reflectivity);
+	//color = mix(base_color, color*base_reflectivity, );
+
+	color = mix(base_color, color, base_reflectivity);// + wall_color;//color + wall_color;
 
 	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(color, 0.0));
 }

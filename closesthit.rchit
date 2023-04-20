@@ -102,8 +102,8 @@ void main()
 	vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
 
 	// This will be a texture sample
-	rayPayload.reflector = 0.125;
-	rayPayload.opacity = 0.0125;
+	rayPayload.reflector = 0.5;
+	rayPayload.opacity = 0.1;
 
 	// This will be a texture sample
 	vec3 color = (v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
@@ -136,5 +136,4 @@ void main()
 	{
 		rayPayload.color = phongModelDiffAndSpec(false, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal) * 0.3;
 	}
-
 }
