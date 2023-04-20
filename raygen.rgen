@@ -12,7 +12,7 @@ struct ray
 };
 
 ray rays[32];
-
+const int level_cutoff = 10;
 
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
@@ -95,6 +95,14 @@ void main()
 				}
 				else
 				{
+					rays[i].level++;
+					
+					if(rays[i].level >= level_cutoff)
+					{
+						rays[i].in_use = false;
+						continue;
+					}
+
 					if(rays[i].reflected_ray == true)
 						reflected_color += rayPayload.color;
 					else
