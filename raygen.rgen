@@ -11,8 +11,10 @@ struct ray
 	bool reflected_ray;
 };
 
-ray rays[32];
 const int level_cutoff = 10;
+const int buffer_size = 128;
+ray rays[buffer_size];
+
 
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
