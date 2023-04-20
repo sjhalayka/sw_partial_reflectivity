@@ -94,6 +94,13 @@ void main()
 					base_color = rayPayload.color;
 					base_reflectivity = rayPayload.reflector;
 				}
+				else
+				{
+					if(rays[i].reflected_ray == true)
+						reflected_color += rayPayload.color;
+					else
+						refracted_color += rayPayload.color;
+				}
 
 				// hit the wall
 				if(rayPayload.distance == -1.0)
@@ -101,11 +108,6 @@ void main()
 					rays[i].in_use = false;
 					continue;
 				}
-
-				if(rays[i].reflected_ray == true)
-					reflected_color += rayPayload.color;
-				else
-					refracted_color += rayPayload.color;
 
 				// entering
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
