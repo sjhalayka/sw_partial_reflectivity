@@ -14,6 +14,9 @@ struct RayPayload {
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;
 layout(location = 2) rayPayloadEXT bool shadowed;
 
+layout(binding = 0, set = 1) uniform sampler2D baseColorSampler;
+layout(binding = 1, set = 1) uniform sampler2D normalSampler;
+
 hitAttributeEXT vec2 attribs;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
@@ -103,11 +106,11 @@ void main()
 	vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
 
 	// This will be a texture sample
-	rayPayload.reflector = 0.15;
+	rayPayload.reflector = 0.5;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
 	rayPayload.opacity = 0.1;
 
 	// This will be a texture sample
-	vec3 color = (v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
+	vec3 color = texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 
 	rayPayload.pure_color = color;
 	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal);// vec3(uv, 0.0);
