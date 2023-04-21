@@ -112,8 +112,6 @@ void main()
 						rays[i].in_use = false;
 						continue;
 					}
-
-
 				}
 
 				// hit the wall
@@ -151,7 +149,7 @@ void main()
 	}
 
 	vec3 color = mix(base_color, reflected_color, base_reflectivity);// + wall_color;//color + wall_color;
-	color = mix(refracted_color, color, base_opacity);
+	color = mix(color, refracted_color, 1 - base_opacity);
 
 
 	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(color, 0.0));
