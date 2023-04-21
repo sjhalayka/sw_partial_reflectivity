@@ -110,9 +110,8 @@ void main()
 					base_reflectivity = rayPayload.reflector;
 					base_opacity = rayPayload.opacity;
 				}
-				else
-				{
-	
+//				else
+//				{
 					if(rays[i].reflected_ray == true)
 						reflected_color += rayPayload.color;
 					else
@@ -120,9 +119,15 @@ void main()
 						vec3 new_origin = hitPos.xyz + rayPayload.normal * 0.01f;
 						float dist = distance(rays[i].origin.xyz, new_origin);
 
-						refracted_color += dist*rayPayload.opacity*rayPayload.pure_color;
+						refracted_color += dist*rayPayload.opacity*rayPayload.color;
 					}
-
+						
+					if(rayPayload.distance == -1.0)
+					{
+						rays[i].in_use = false;
+						//reflected_color = rayPayload.color;
+						continue;
+					}
 
 					rays[i].level++;
 					
@@ -131,14 +136,10 @@ void main()
 						rays[i].in_use = false;
 						continue;
 					}
-				}
+//				}
 
 
-				if(rayPayload.distance == -1.0)
-				{
-					rays[i].in_use = false;
-					continue;
-				}
+
 
 				// entering
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
@@ -162,10 +163,8 @@ void main()
 			break;
 	}
 
-	//vec3 color = mix(base_color, reflected_color, base_reflectivity);// + wall_color;//color + wall_color;
-	//color += mix(color, refracted_color, 1 - base_opacity);
-	vec3 color =	mix(base_color, refracted_color, 1 - base_opacity);// +
-					//refracted_color*(1 - base_opacity);
+	vec3 color = mix(base_color, reflected_color, base_reflectivity);// + wall_color;//color + wall_color;
+	color = mix(color, refracted_color, 1 - base_opacity);
 
 	
 	//color += wall_color;

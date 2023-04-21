@@ -107,12 +107,12 @@ void main()
 
 	// This will be a texture sample
 	rayPayload.reflector = 1.0;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
-	rayPayload.opacity = 0.5;
+	rayPayload.opacity = 1.0;
 
 	// This will be a texture sample
 	vec3 color = texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 
-	rayPayload.pure_color = color;
+	rayPayload.pure_color = (v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal);// vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
