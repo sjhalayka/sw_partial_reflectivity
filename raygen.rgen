@@ -105,7 +105,12 @@ void main()
 					if(rays[i].reflected_ray == true)
 						reflected_color += rayPayload.color;
 					else
-						refracted_color += rayPayload.opacity*rayPayload.pure_color;
+					{
+						vec3 new_origin = hitPos.xyz - rayPayload.normal * 0.01f;
+						float dist = distance(rays[i].origin.xyz, new_origin);
+
+						refracted_color += dist*rayPayload.opacity*rayPayload.pure_color;
+					}
 
 					if(rays[i].level >= level_cutoff)
 					{
