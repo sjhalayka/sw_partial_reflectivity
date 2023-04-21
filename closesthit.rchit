@@ -4,6 +4,7 @@
 
 struct RayPayload {
 	vec3 color;
+	vec3 pure_color;
 	float distance;
 	vec3 normal;
 	float reflector;
@@ -108,6 +109,7 @@ void main()
 	// This will be a texture sample
 	vec3 color = (v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 
+	rayPayload.pure_color = color;
 	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal);// vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;

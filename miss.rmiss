@@ -3,6 +3,7 @@
 
 struct RayPayload {
 	vec3 color;
+	vec3 pure_color;
 	float distance;
 	vec3 normal;
 	float reflector;
@@ -20,7 +21,7 @@ void main()
 	vec3 unitDir = normalize(gl_WorldRayDirectionEXT);
 	float t = 0.5 * (unitDir.y + 1.0);
 	rayPayload.color = (1.0-t) * gradientStart + t * gradientEnd;
-
+	rayPayload.pure_color = rayPayload.color;
 	rayPayload.distance = -1.0f;
 	rayPayload.normal = vec3(0.0f);
 	rayPayload.reflector = 0.0f;
