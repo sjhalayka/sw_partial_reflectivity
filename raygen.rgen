@@ -112,10 +112,9 @@ void main()
 				}
 				else
 				{
-					rays[i].level++;
-
+	
 					if(rays[i].reflected_ray == true)
-						reflected_color += rayPayload.opacity*rayPayload.color;
+						reflected_color += rayPayload.color;
 					else
 					{
 						vec3 new_origin = hitPos.xyz + rayPayload.normal * 0.01f;
@@ -124,6 +123,9 @@ void main()
 						refracted_color += dist*rayPayload.opacity*rayPayload.pure_color;
 					}
 
+
+					rays[i].level++;
+					
 					if(rays[i].level >= level_cutoff)
 					{
 						rays[i].in_use = false;
@@ -131,11 +133,9 @@ void main()
 					}
 				}
 
-				// hit the wall
+
 				if(rayPayload.distance == -1.0)
 				{
-					//wall_color = rayPayload.color;
-
 					rays[i].in_use = false;
 					continue;
 				}
@@ -162,8 +162,12 @@ void main()
 			break;
 	}
 
-	vec3 color = mix(base_color, reflected_color, base_reflectivity);// + wall_color;//color + wall_color;
-	color = mix(color, refracted_color, 1 - base_opacity);
+	//vec3 color = mix(base_color, reflected_color, base_reflectivity);// + wall_color;//color + wall_color;
+	//color += mix(color, refracted_color, 1 - base_opacity);
+	vec3 color =	mix(base_color, refracted_color, 1 - base_opacity);// +
+					//refracted_color*(1 - base_opacity);
+
+	
 	//color += wall_color;
 
 	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(color, 0.0));

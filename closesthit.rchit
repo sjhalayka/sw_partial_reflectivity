@@ -106,8 +106,8 @@ void main()
 	vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
 
 	// This will be a texture sample
-	rayPayload.reflector = 0.5;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
-	rayPayload.opacity = 0.1;
+	rayPayload.reflector = 1.0;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
+	rayPayload.opacity = 0.5;
 
 	// This will be a texture sample
 	vec3 color = texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
