@@ -60,6 +60,7 @@ void main()
 	vec3 refracted_color = vec3(0.0);
 
 	float base_reflectivity = 0.0;
+	float base_opacity = 0.0;
 
 	for(int i = 0; i < 31; i++)
 	{
@@ -94,21 +95,24 @@ void main()
 					rays[i].level++;
 					base_color = rayPayload.color;
 					base_reflectivity = rayPayload.reflector;
+					base_opacity = rayPayload.opacity;
 				}
 				else
 				{
 					rays[i].level++;
-					
+
+					if(rays[i].reflected_ray == true)
+						reflected_color += rayPayload.color;
+					else
+						refracted_color += rayPayload.color;
+
 					if(rays[i].level >= level_cutoff)
 					{
 						rays[i].in_use = false;
 						continue;
 					}
 
-					if(rays[i].reflected_ray == true)
-						reflected_color += rayPayload.color;
-					else
-						refracted_color += rayPayload.color;
+
 				}
 
 				// hit the wall
@@ -121,10 +125,10 @@ void main()
 				// entering
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
 				{
-					rays[i].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
+					rays[i].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
 
-					rays[i].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
-					rays[i].reflected_ray = true;
+					//rays[i].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
+					rays[i].reflected_ray = false;//true;
 				
 				}
 				// exiting
@@ -146,6 +150,8 @@ void main()
 	}
 
 	vec3 color = mix(base_color, reflected_color, base_reflectivity);// + wall_color;//color + wall_color;
+	color = mix(refracted_color, color, base_opacity);
+
 
 	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(color, 0.0));
 }
