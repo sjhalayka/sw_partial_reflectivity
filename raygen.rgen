@@ -63,7 +63,7 @@ void main()
 	float base_reflectivity = 0.0;
 	float base_opacity = 0.0;
 
-	for(int i = 0; i < 31; i++)
+	for(int i = 0; i < buffer_size; i++)
 	{
 		rays[i].direction = vec4(0.0);
 		rays[i].origin = vec4(0.0);
@@ -80,13 +80,24 @@ void main()
 	
 	while(true)
 	{
-		int count = 0;
+		int free_count = 0;
 
-		for(int i = 0; i < 31; i++)
+		for(int i = 0; i < buffer_size; i++)
+			if(rays[i].in_use == false)
+				free_count++;
+
+		bool branching_allowed = true;
+
+		if(free_count == 0)
+			branching_allowed = false;
+
+		int used_count = 0;
+
+		for(int i = 0; i < buffer_size; i++)
 		{
 			if(rays[i].in_use)
 			{
-				count++;
+				used_count++;
 
 				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
 				const vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
@@ -106,7 +117,7 @@ void main()
 						reflected_color += rayPayload.color;
 					else
 					{
-						vec3 new_origin = hitPos.xyz - rayPayload.normal * 0.01f;
+						vec3 new_origin = hitPos.xyz + rayPayload.normal * 0.01f;
 						float dist = distance(rays[i].origin.xyz, new_origin);
 
 						refracted_color += dist*rayPayload.opacity*rayPayload.pure_color;
@@ -145,12 +156,9 @@ void main()
 			}
 		}
 
-		if(count == 0)
-		{
+
+		if(used_count == 0)
 			break;
-		}
-
-
 	}
 
 	vec3 color = mix(base_color, reflected_color, base_reflectivity);// + wall_color;//color + wall_color;
