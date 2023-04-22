@@ -8,7 +8,7 @@ struct ray
 	vec4 origin;// = vec3(0.0);
 	bool in_use;// = false;
 	int level;// = 0;
-	bool reflected_ray;
+
 	int parent_id;
 	vec3 base_color;
 	float reflection_constant;
@@ -17,8 +17,8 @@ struct ray
 	vec3 running_refracted_color;
 };
 
-const int level_cutoff = 4;
-const int buffer_size = 10;
+const int level_cutoff = 10;
+const int buffer_size = 128;
 ray rays[buffer_size];
 int current_buffer_index = 0;
 
@@ -62,11 +62,6 @@ void main()
 	float tmin = 0.001;
 	float tmax = 10000.0;
 
-	vec3 base_color = vec3(0.0);
-	vec3 reflected_color = vec3(0.0);
-	vec3 refracted_color = vec3(0.0);
-	vec3 wall_color = vec3(0.0);
-
 	float base_reflectivity = 0.0;
 	float base_opacity = 0.0;
 
@@ -76,15 +71,14 @@ void main()
 		rays[i].origin = vec4(0.0);
 		rays[i].in_use = false;
 		rays[i].level = 0;
-		rays[i].reflected_ray = false;
 		rays[i].parent_id = -1;
+		rays[i].base_color = vec3(0.0);
 	}
 
 	rays[0].direction = direction;
 	rays[0].origin = origin;
 	rays[0].in_use = true;
 	rays[0].level =	1;
-	rays[0].reflected_ray = true;
 	rays[0].parent_id = -1;
 	
 	current_buffer_index++;
@@ -95,7 +89,6 @@ void main()
 	// hit the wall
 	if(rayPayload.distance == -1.0)
 	{
-		rays[0].in_use = false;
 		rays[0].base_color = rayPayload.color;
 		rays[0].reflection_constant = rayPayload.reflector;
 		rays[0].refraction_constant = rayPayload.opacity;
@@ -110,7 +103,6 @@ void main()
 				//generate new ray
 				rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
 				rays[current_buffer_index].direction.xyz = reflect(rays[0].direction.xyz, rayPayload.normal);
-				rays[current_buffer_index].reflected_ray = true;
 				rays[current_buffer_index].parent_id = 0;
 				rays[current_buffer_index].in_use = true;
 
@@ -122,24 +114,16 @@ void main()
 				//generate new ray
 				rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
 				rays[current_buffer_index].direction.xyz = rays[0].direction.xyz;//, rayPayload.normal);
-				rays[current_buffer_index].reflected_ray = false;//true;
 				rays[current_buffer_index].parent_id = 0;
 				rays[current_buffer_index].in_use = true;
 
 				current_buffer_index++;
-			}	
+			}
 		}
-		// exiting
-		//else
-		//{
-		//	rays[i].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
-		//	rays[i].reflected_ray = false;
-		//	//rays[i].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);			
-		//}
-
-
 	}
-		
+	
+	rays[0].in_use = false;
+
 	while(true)
 	{
 		int used_count = 0;
@@ -149,23 +133,26 @@ void main()
 			if(rays[i].in_use)
 			{
 				used_count++;
-
-				// get colour
+				rays[i].base_color = rayPayload.color;
+				rays[i].reflection_constant = rayPayload.reflector;
+				rays[i].refraction_constant = rayPayload.opacity;
 
 				if(rayPayload.distance == -1.0)
 				{
 					rays[i].in_use = false;
-					//reflected_color = rayPayload.color;
 					continue;
 				}
 
-				rays[i].level++;
+//				rays[i].level++;
 					
-				if(rays[i].level >= level_cutoff)
-				{
-					rays[i].in_use = false;
-					continue;
-				}
+//				if(rays[i].level >= level_cutoff)
+//				{
+//					rays[i].in_use = false;
+//					continue;
+//				}
+				
+
+
 
 				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
 				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
@@ -178,8 +165,7 @@ void main()
 						//generate new ray
 						rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
 						rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
-						rays[current_buffer_index].reflected_ray = true;
-						rays[current_buffer_index].parent_id = 0;
+						rays[current_buffer_index].parent_id = i;
 						rays[current_buffer_index].in_use = true;
 
 						current_buffer_index++;
@@ -190,21 +176,28 @@ void main()
 						//generate new ray
 						rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
 						rays[current_buffer_index].direction.xyz = rays[i].direction.xyz;//, rayPayload.normal);
-						rays[current_buffer_index].reflected_ray = false;//true;
-						rays[current_buffer_index].parent_id = 0;
+						rays[current_buffer_index].parent_id = i;
 						rays[current_buffer_index].in_use = true;
 
 						current_buffer_index++;
 					}	
 				}
 				// exiting
-				//else
-				//{
-				//	rays[i].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
-				//	rays[i].reflected_ray = false;
-				//	//rays[i].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);			
-				//}
+				else
+				{
+					if(current_buffer_index < buffer_size - 1)
+					{
+						//generate new ray
+						rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
+						rays[current_buffer_index].direction.xyz = rays[i].direction.xyz;
+						rays[current_buffer_index].parent_id = i;
+						rays[current_buffer_index].in_use = true;
 
+						current_buffer_index++;
+					}
+				}
+
+				rays[i].in_use = false;
 			}
 		}
 
@@ -212,7 +205,17 @@ void main()
 			break;
 	}
 
-	
+	for(int i = current_buffer_index; i >= 0; i--)
+	{
+		
+
+	}
+
+
+
+
+
+
 	vec3 color = rays[0].base_color;//mix(rays[0].base_color, rays[0].reflected_color, rays[0].reflection_constant);// + wall_color;//color + wall_color;
 	//color = mix(color, refracted_color, 1 - base_opacity);
 	
