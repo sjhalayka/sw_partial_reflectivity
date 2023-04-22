@@ -14,8 +14,8 @@ struct ray
 	vec3 accumulated_color;
 	float reflection_constant;
 	float refraction_constant;
-	vec3 running_reflected_color;
-	vec3 running_refracted_color;
+	vec3 reflected_color;
+	vec3 refracted_color;
 	bool reflected_ray;
 };
 
@@ -76,8 +76,8 @@ void main()
 		rays[i].accumulated_color = vec3(0.0);
 		rays[i].reflection_constant = 0;
 		rays[i].refraction_constant = 0;
-		rays[i].running_reflected_color = vec3(0.0);
-		rays[i].running_refracted_color = vec3(0.0);
+		rays[i].reflected_color = vec3(0.0);
+		rays[i].refracted_color = vec3(0.0);
 		rays[i].reflected_ray = false;
 	}
 
@@ -99,6 +99,7 @@ void main()
 		rays[0].base_color = rayPayload.color;
 		rays[0].reflection_constant = rayPayload.reflector;
 		rays[0].refraction_constant = rayPayload.opacity;
+		rays[0].accumulated_color = rays[0].base_color;
 	}
 	else
 	{
@@ -117,7 +118,7 @@ void main()
 				current_buffer_index++;
 			}
 
-			if(current_buffer_index < buffer_size - 1)
+			if(false)//current_buffer_index < buffer_size - 1)
 			{
 				//generate new ray
 				rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
@@ -129,7 +130,7 @@ void main()
 				current_buffer_index++;
 			}
 		}
-						// exiting
+		// exiting
 		else
 		{
 			if(current_buffer_index < buffer_size - 1)
@@ -157,6 +158,7 @@ void main()
 			if(rays[i].in_use)
 			{
 				used_count++;
+
 				rays[i].base_color = rayPayload.color;
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
@@ -193,7 +195,7 @@ void main()
 						current_buffer_index++;
 					}
 
-					if(current_buffer_index < buffer_size - 1)
+					if(false)//current_buffer_index < buffer_size - 1)
 					{
 						//generate new ray
 						rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
@@ -231,16 +233,29 @@ void main()
 
 	for(int i = current_buffer_index - 1; i > 0; i--)
 	{
-		
+		int parent_id = rays[i].parent_id;
+/*
+		if(rays[i].reflected_ray)
+			rays[parent_id].reflected_color = mix(rays[i].base_color, rays[parent_id].base_color, rays[i].reflection_constant);
+		else
+			rays[parent_id].refracted_color = mix(rays[i].base_color, rays[parent_id].base_color, 1 - rays[i].refraction_constant);// rays[i].base_color*rays[parent_id].refraction_constant;
+*/
 
+		if(rays[i].reflected_ray)
+			rays[parent_id].reflected_color = rays[i].base_color;
+		else
+			rays[parent_id].refracted_color = rays[i].base_color;// rays[i].base_color*rays[parent_id].refraction_constant;
+
+	}
+
+	for(int i = 0; i < current_buffer_index - 1; i++)
+	{
+		rays[i].accumulated_color = rays[i].reflected_color + rays[i].refracted_color;
 	}
 
 
 
-
-
-
-	vec3 color = rays[1].base_color;//mix(rays[0].base_color, rays[0].reflected_color, rays[0].reflection_constant);// + wall_color;//color + wall_color;
+	vec3 color = rays[0].accumulated_color;//mix(rays[0].base_color, rays[0].reflected_color, rays[0].reflection_constant);// + wall_color;//color + wall_color;
 	//color = mix(color, refracted_color, 1 - base_opacity);
 	
 	//color += wall_color;
