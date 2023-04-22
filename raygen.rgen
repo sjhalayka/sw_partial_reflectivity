@@ -15,6 +15,7 @@ struct ray
 	float refraction_constant;
 	vec3 running_reflected_color;
 	vec3 running_refracted_color;
+	bool reflected_ray;
 };
 
 const int level_cutoff = 10;
@@ -62,8 +63,6 @@ void main()
 	float tmin = 0.001;
 	float tmax = 10000.0;
 
-	float base_reflectivity = 0.0;
-	float base_opacity = 0.0;
 
 	for(int i = 0; i < buffer_size; i++)
 	{
@@ -73,6 +72,11 @@ void main()
 		rays[i].level = 0;
 		rays[i].parent_id = -1;
 		rays[i].base_color = vec3(0.0);
+		rays[i].reflection_constant = 0;
+		rays[i].refraction_constant = 0;
+		rays[i].running_reflected_color = vec3(0.0);
+		rays[i].running_refracted_color = vec3(0.0);
+		rays[i].reflected_ray = false;
 	}
 
 	rays[0].direction = direction;
@@ -80,6 +84,7 @@ void main()
 	rays[0].in_use = true;
 	rays[0].level =	1;
 	rays[0].parent_id = -1;
+	rays[0].reflected_ray = false;
 	
 	current_buffer_index++;
 
@@ -105,6 +110,7 @@ void main()
 				rays[current_buffer_index].direction.xyz = reflect(rays[0].direction.xyz, rayPayload.normal);
 				rays[current_buffer_index].parent_id = 0;
 				rays[current_buffer_index].in_use = true;
+				rays[current_buffer_index].reflected_ray = true;
 
 				current_buffer_index++;
 			}
@@ -116,6 +122,7 @@ void main()
 				rays[current_buffer_index].direction.xyz = rays[0].direction.xyz;//, rayPayload.normal);
 				rays[current_buffer_index].parent_id = 0;
 				rays[current_buffer_index].in_use = true;
+				rays[current_buffer_index].reflected_ray = false;
 
 				current_buffer_index++;
 			}
@@ -143,17 +150,14 @@ void main()
 					continue;
 				}
 
-//				rays[i].level++;
+				rays[i].level++;
 					
-//				if(rays[i].level >= level_cutoff)
-//				{
-//					rays[i].in_use = false;
-//					continue;
-//				}
+				if(rays[i].level >= level_cutoff)
+				{
+					rays[i].in_use = false;
+					continue;
+				}
 				
-
-
-
 				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
 				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
 				
@@ -167,6 +171,7 @@ void main()
 						rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
 						rays[current_buffer_index].parent_id = i;
 						rays[current_buffer_index].in_use = true;
+						rays[current_buffer_index].reflected_ray = true;
 
 						current_buffer_index++;
 					}
@@ -178,6 +183,7 @@ void main()
 						rays[current_buffer_index].direction.xyz = rays[i].direction.xyz;//, rayPayload.normal);
 						rays[current_buffer_index].parent_id = i;
 						rays[current_buffer_index].in_use = true;
+						rays[current_buffer_index].reflected_ray = false;
 
 						current_buffer_index++;
 					}	
@@ -192,6 +198,7 @@ void main()
 						rays[current_buffer_index].direction.xyz = rays[i].direction.xyz;
 						rays[current_buffer_index].parent_id = i;
 						rays[current_buffer_index].in_use = true;
+						rays[current_buffer_index].reflected_ray = false;
 
 						current_buffer_index++;
 					}
@@ -205,7 +212,7 @@ void main()
 			break;
 	}
 
-	for(int i = current_buffer_index; i >= 0; i--)
+	for(int i = current_buffer_index - 1; i > 0; i--)
 	{
 		
 
