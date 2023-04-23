@@ -118,6 +118,7 @@ void main()
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
 
+				// hit the wall
 				if(rayPayload.distance == -1.0)
 				{
 					rays[i].in_use = false;
@@ -143,8 +144,10 @@ void main()
 						current_buffer_index++;
 					}
 
-					if(false)//current_buffer_index < buffer_size)
+					if(current_buffer_index < buffer_size)
 					{
+						rays[i].child_refract_id = current_buffer_index;
+
 						//generate new ray
 						rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
 						rays[current_buffer_index].direction.xyz = rays[i].direction.xyz;//, rayPayload.normal);
@@ -157,8 +160,10 @@ void main()
 				// exiting
 				else
 				{
-					if(false)//current_buffer_index < buffer_size)
+					if(current_buffer_index < buffer_size)
 					{
+						rays[i].child_refract_id = current_buffer_index;
+
 						//generate new ray
 						rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
 						rays[current_buffer_index].direction.xyz = rays[i].direction.xyz;
