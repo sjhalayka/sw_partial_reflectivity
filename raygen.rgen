@@ -4,9 +4,9 @@
 
 struct ray
 {
-	vec4 direction;// = vec3(0.0);
-	vec4 origin;// = vec3(0.0);
-	bool in_use;// = false;
+	vec4 direction;
+	vec4 origin;
+	bool in_use;
 
 	int child_refract_id;
 	int child_reflect_id;
@@ -21,7 +21,7 @@ struct ray
 };
 
 
-const int buffer_size = 10;
+const int buffer_size = 50;
 ray rays[buffer_size];
 int current_buffer_index = 0;
 
