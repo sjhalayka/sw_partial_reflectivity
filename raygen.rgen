@@ -137,7 +137,7 @@ void main()
 
 						//generate new ray
 						rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
-						rays[current_buffer_index].direction.xyz = rays[i].direction.xyz;//, rayPayload.normal);
+						rays[current_buffer_index].direction.xyz = refract(rays[i].direction.xyz, rayPayload.normal, 1.0);//rays[i].direction.xyz;//, rayPayload.normal);
 						rays[current_buffer_index].in_use = true;
 						rays[current_buffer_index].reflected_ray = false;
 
@@ -153,7 +153,7 @@ void main()
 
 						//generate new ray
 						rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
-						rays[current_buffer_index].direction.xyz = rays[i].direction.xyz;
+						rays[current_buffer_index].direction.xyz = refract(rays[i].direction.xyz, -rayPayload.normal, 1.0);//rays[i].direction.xyz;
 						rays[current_buffer_index].in_use = true;
 						rays[current_buffer_index].reflected_ray = false;
 
