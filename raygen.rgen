@@ -88,21 +88,8 @@ void main()
 	rays[0].direction = direction;
 	rays[0].origin = origin;
 	rays[0].in_use = true;
-	rays[0].reflected_ray = false;
-	
+	rays[0].reflected_ray = true;
 	current_buffer_index++;
-
-	traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[0].origin.xyz, tmin, rays[0].direction.xyz, tmax, 0);
-	vec4 hitPos = rays[0].origin + rays[0].direction * rayPayload.distance;
-
-	// hit the wall right off the bat
-	if(rayPayload.distance == -1.0)
-	{
-		rays[0].base_color = rayPayload.color;
-		rays[0].reflection_constant = rayPayload.reflector;
-		rays[0].refraction_constant = rayPayload.opacity;
-		rays[0].in_use = false;
-	}
 
 	while(true)
 	{
@@ -114,6 +101,9 @@ void main()
 			{
 				used_count++;
 
+				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
+				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
+
 				rays[i].base_color = rayPayload.color;
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
@@ -124,10 +114,7 @@ void main()
 					rays[i].in_use = false;
 					continue;
 				}
-				
-				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
-				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
-				
+
 				// entering
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
 				{
