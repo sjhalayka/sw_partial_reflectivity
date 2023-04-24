@@ -21,7 +21,7 @@ struct ray
 	bool reflected_ray;
 };
 
-const int buffer_size = 32;
+const int buffer_size = 16;
 ray rays[buffer_size];
 int current_buffer_index = 0;
 float eta = 0.95;
