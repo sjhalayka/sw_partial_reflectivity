@@ -52,33 +52,6 @@ struct RayPayload {
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
 
 
-
-float FresnelReflectAmount (float n1, float n2, vec3 normal, vec3 incident,  float reflection_constant)
-{
-        // Schlick aproximation
-        float r0 = (n1-n2) / (n1+n2);
-        r0 *= r0;
-        float cosX = -dot(normal, incident);
-        if (n1 > n2)
-        {
-            float n = n1/n2;
-            float sinT2 = n*n*(1.0-cosX*cosX);
-            // Total internal reflection
-            if (sinT2 > 1.0)
-                return 1.0;
-            cosX = sqrt(1.0-sinT2);
-        }
-        float x = 1.0-cosX;
-        float ret = r0+(1.0-r0)*x*x*x*x*x;
- 
-        // adjust reflect multiplier for object reflectivity
-        ret = (reflection_constant + (1.0-reflection_constant) * ret);
-        return ret;
-}
-
-
-
-
 // Max. number of recursion is passed via a specialization constant
 layout (constant_id = 0) const int MAX_RECURSION = 0;
 
@@ -209,11 +182,6 @@ void main()
 	for(int i = current_buffer_index - 1; i >= 0; i--)
 	{
 		vec3 accum = rays[i].base_color;
-
-//		float f = FresnelReflectAmount(1.0, eta, normalize(rays[i].normal), normalize(rays[i].pos), rays[i].reflection_constant);
-//		float factor = rays[i].reflection_constant;//1.0;
-//		float d = dot(normalize(rays[i].pos), normalize(rays[i].normal));
-//		float reflectivity = factor + (1.0 - factor) * pow(1.0 - d, 5.0);
 
 		if(rays[i].child_reflect_id != -1)
 			accum = mix(accum, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
