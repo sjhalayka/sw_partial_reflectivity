@@ -9,6 +9,7 @@ struct RayPayload {
 	vec3 normal;
 	float reflector;
 	float opacity;
+	vec3 pos;
 };
 
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;
@@ -25,6 +26,7 @@ layout(binding = 2, set = 0) uniform UBO
 	mat4 viewInverse;
 	mat4 projInverse;
 	vec4 lightPos;
+	vec3 camera_pos;
 	int vertexSize;
 } ubo;
 layout(binding = 3, set = 0) buffer Vertices { vec4 v[]; } vertices;
@@ -108,11 +110,12 @@ void main()
 
 	// This will be a texture sample
 	rayPayload.reflector = 0.5;//1.0;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
-	rayPayload.opacity = 0.5;
+	rayPayload.opacity = 0.25;
 
 	// This will be a texture sample
 	vec3 color = texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 
+	rayPayload.pos = pos;
 	rayPayload.pure_color = color;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal);// vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
