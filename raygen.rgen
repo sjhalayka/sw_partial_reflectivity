@@ -140,7 +140,7 @@ float get_ray0(const int channel, const float eta)
 				// entering
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
 				{
-					if(current_buffer_index < buffer_size)
+					if(current_buffer_index < buffer_size && rayPayload.reflector > 0.0)
 					{
 						rays[i].child_reflect_id = current_buffer_index;
 
@@ -151,7 +151,7 @@ float get_ray0(const int channel, const float eta)
 						current_buffer_index++;
 					}
 
-					if(current_buffer_index < buffer_size)
+					if(current_buffer_index < buffer_size && rayPayload.opacity < 1.0)
 					{
 						rays[i].child_refract_id = current_buffer_index;
 
@@ -200,7 +200,8 @@ float get_ray0(const int channel, const float eta)
 			break;
 	}
 
-
+	
+	
 	// Step two: accumulate colour
 	for(int i = current_buffer_index - 1; i >= 0; i--)
 	{
@@ -214,7 +215,7 @@ float get_ray0(const int channel, const float eta)
 
 		rays[i].accumulated_color = accum;
 	}
-
+	
 
 
 	/*
@@ -232,20 +233,21 @@ float get_ray0(const int channel, const float eta)
 
 		float Ratio = F + (1.0 - F) * pow((1.0 - dot(-incident, normal)), FresnelPower);
 
-		float mixed_color = 0.0;
+		float mixed_color = rays[i].base_color;
 
 		if(rays[i].child_reflect_id != -1 && rays[i].child_refract_id != -1)
 			mixed_color = mix(rays[rays[i].child_refract_id].accumulated_color, rays[rays[i].child_reflect_id].accumulated_color, Ratio);
 		else if(rays[i].child_reflect_id != -1)
-			mixed_color = rays[rays[i].child_reflect_id].accumulated_color;
+			mixed_color = mix(accum, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
 		else if(rays[i].child_refract_id != -1)
-			mixed_color = rays[rays[i].child_refract_id].accumulated_color;
+			mixed_color = mix(accum, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
 
-		accum = mix(accum, mixed_color, 1.0 - rays[i].refraction_constant);
+		accum = mixed_color;//mix(accum, mixed_color, 1.0 - rays[i].refraction_constant);
 	
 		rays[i].accumulated_color = accum;
 	}
 	*/
+	
 
 
 
