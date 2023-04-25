@@ -13,17 +13,17 @@ struct ray
 	int child_refract_id;
 	int child_reflect_id;
 
-	vec3 base_color;
-	vec3 accumulated_color;
+	float base_color;
+	float accumulated_color;
 
 	float reflection_constant;
 	float refraction_constant;
 };
 
-const int buffer_size = 16;
-ray rays[buffer_size];
-int current_buffer_index = 0;
-const float eta = 0.95;
+
+const float red_eta = 0.85;
+const float green_eta = 0.90;
+const float blue_eta = 0.95;
 
 
 
@@ -52,11 +52,12 @@ struct RayPayload {
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
 
 
-// Max. number of recursion is passed via a specialization constant
-layout (constant_id = 0) const int MAX_RECURSION = 0;
-
-void main() 
+float get_ray0_red(float eta)
 {
+	const int buffer_size = 16;
+	ray rays[buffer_size];
+	int current_buffer_index = 0;
+
 	const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
 	const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
 	vec2 d = inUV * 2.0 - 1.0;
@@ -78,8 +79,8 @@ void main()
 		rays[i].in_use = false;
 		rays[i].child_reflect_id = -1;
 		rays[i].child_refract_id = -1;
-		rays[i].base_color = vec3(0.0);
-		rays[i].accumulated_color = vec3(0.0);
+		rays[i].base_color = 0.0;//vec3(0.0);
+		rays[i].accumulated_color = 0.0;//vec3(0.0);
 		rays[i].reflection_constant = 0;
 		rays[i].refraction_constant = 0;
 	}
@@ -104,7 +105,7 @@ void main()
 
 				rays[i].normal = rayPayload.normal;
 				rays[i].pos = rayPayload.pos;
-				rays[i].base_color = rayPayload.color;
+				rays[i].base_color = rayPayload.color.r;
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
 
@@ -181,7 +182,7 @@ void main()
 	// Step two: accumulate colour
 	for(int i = current_buffer_index - 1; i >= 0; i--)
 	{
-		vec3 accum = rays[i].base_color;
+		float accum = rays[i].base_color;
 
 		if(rays[i].child_reflect_id != -1)
 			accum = mix(accum, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
@@ -192,5 +193,313 @@ void main()
 		rays[i].accumulated_color = accum;
 	}
 
-	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(rays[0].accumulated_color, 0.0));
+	return rays[0].accumulated_color;
+}
+
+
+float get_ray0_green(float eta)
+{
+	const int buffer_size = 16;
+	ray rays[buffer_size];
+	int current_buffer_index = 0;
+
+	const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
+	const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
+	vec2 d = inUV * 2.0 - 1.0;
+
+	vec4 origin = cam.viewInverse * vec4(0,0,0,1);
+	vec4 target = cam.projInverse * vec4(d.x, d.y, 1, 1) ;
+	vec4 direction = cam.viewInverse*vec4(normalize(target.xyz / target.w), 0);
+
+	uint rayFlags = gl_RayFlagsOpaqueEXT;
+	uint cullMask = 0xff;
+	float tmin = 0.001;
+	float tmax = 10000.0;
+
+	// Step one: make tree of ray segments
+	for(int i = 0; i < buffer_size; i++)
+	{
+		rays[i].direction = vec4(0.0);
+		rays[i].origin = vec4(0.0);
+		rays[i].in_use = false;
+		rays[i].child_reflect_id = -1;
+		rays[i].child_refract_id = -1;
+		rays[i].base_color = 0.0;//vec3(0.0);
+		rays[i].accumulated_color = 0.0;//vec3(0.0);
+		rays[i].reflection_constant = 0;
+		rays[i].refraction_constant = 0;
+	}
+
+	rays[0].direction = direction;
+	rays[0].origin = origin;
+	rays[0].in_use = true;
+	current_buffer_index++;
+
+	while(true)
+	{
+		int used_count = 0;
+
+		for(int i = 0; i < buffer_size; i++)
+		{
+			if(rays[i].in_use)
+			{
+				used_count++;
+
+				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
+				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
+
+				rays[i].normal = rayPayload.normal;
+				rays[i].pos = rayPayload.pos;
+				rays[i].base_color = rayPayload.color.g;
+				rays[i].reflection_constant = rayPayload.reflector;
+				rays[i].refraction_constant = rayPayload.opacity;
+
+				// hit the wall
+				if(rayPayload.distance == -1.0)
+				{
+					rays[i].in_use = false;
+					continue;
+				}
+
+				// entering
+				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
+				{
+					if(current_buffer_index < buffer_size)
+					{
+						rays[i].child_reflect_id = current_buffer_index;
+
+						//generate new ray
+						rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
+						rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
+						rays[current_buffer_index].in_use = true;
+						current_buffer_index++;
+					}
+
+					if(current_buffer_index < buffer_size)
+					{
+						rays[i].child_refract_id = current_buffer_index;
+
+						//generate new ray
+						rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
+						rays[current_buffer_index].direction.xyz = refract(rays[i].direction.xyz, rayPayload.normal, eta);
+						rays[current_buffer_index].in_use = true;
+						current_buffer_index++;
+					}	
+				}
+				// exiting
+				else
+				{
+					if(current_buffer_index < buffer_size)
+					{
+						rays[i].child_refract_id = current_buffer_index;
+
+						vec3 temp_dir = refract(rays[i].direction.xyz, -rayPayload.normal, 1.0/eta);
+
+						if(temp_dir != vec3(0.0))
+						{
+							//generate new ray
+							rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
+							rays[current_buffer_index].direction.xyz = temp_dir;
+							rays[current_buffer_index].in_use = true;
+							current_buffer_index++;
+						}
+						else
+						{
+							// Total internal reflection
+
+							//generate new ray
+							rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
+							rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, -rayPayload.normal);;
+							rays[current_buffer_index].in_use = true;
+							current_buffer_index++;
+						}
+					}
+				}
+
+				rays[i].in_use = false;
+			}
+		}
+
+		if(used_count == 0)
+			break;
+	}
+
+	// Step two: accumulate colour
+	for(int i = current_buffer_index - 1; i >= 0; i--)
+	{
+		float accum = rays[i].base_color;
+
+		if(rays[i].child_reflect_id != -1)
+			accum = mix(accum, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
+
+		if(rays[i].child_refract_id != -1)
+			accum = mix(accum, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
+
+		rays[i].accumulated_color = accum;
+	}
+
+	return rays[0].accumulated_color;
+}
+
+
+float get_ray0_blue(float eta)
+{
+	const int buffer_size = 16;
+	ray rays[buffer_size];
+	int current_buffer_index = 0;
+
+	const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
+	const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
+	vec2 d = inUV * 2.0 - 1.0;
+
+	vec4 origin = cam.viewInverse * vec4(0,0,0,1);
+	vec4 target = cam.projInverse * vec4(d.x, d.y, 1, 1) ;
+	vec4 direction = cam.viewInverse*vec4(normalize(target.xyz / target.w), 0);
+
+	uint rayFlags = gl_RayFlagsOpaqueEXT;
+	uint cullMask = 0xff;
+	float tmin = 0.001;
+	float tmax = 10000.0;
+
+	// Step one: make tree of ray segments
+	for(int i = 0; i < buffer_size; i++)
+	{
+		rays[i].direction = vec4(0.0);
+		rays[i].origin = vec4(0.0);
+		rays[i].in_use = false;
+		rays[i].child_reflect_id = -1;
+		rays[i].child_refract_id = -1;
+		rays[i].base_color = 0.0;//vec3(0.0);
+		rays[i].accumulated_color = 0.0;//vec3(0.0);
+		rays[i].reflection_constant = 0;
+		rays[i].refraction_constant = 0;
+	}
+
+	rays[0].direction = direction;
+	rays[0].origin = origin;
+	rays[0].in_use = true;
+	current_buffer_index++;
+
+	while(true)
+	{
+		int used_count = 0;
+
+		for(int i = 0; i < buffer_size; i++)
+		{
+			if(rays[i].in_use)
+			{
+				used_count++;
+
+				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
+				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
+
+				rays[i].normal = rayPayload.normal;
+				rays[i].pos = rayPayload.pos;
+				rays[i].base_color = rayPayload.color.b;
+				rays[i].reflection_constant = rayPayload.reflector;
+				rays[i].refraction_constant = rayPayload.opacity;
+
+				// hit the wall
+				if(rayPayload.distance == -1.0)
+				{
+					rays[i].in_use = false;
+					continue;
+				}
+
+				// entering
+				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
+				{
+					if(current_buffer_index < buffer_size)
+					{
+						rays[i].child_reflect_id = current_buffer_index;
+
+						//generate new ray
+						rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
+						rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
+						rays[current_buffer_index].in_use = true;
+						current_buffer_index++;
+					}
+
+					if(current_buffer_index < buffer_size)
+					{
+						rays[i].child_refract_id = current_buffer_index;
+
+						//generate new ray
+						rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
+						rays[current_buffer_index].direction.xyz = refract(rays[i].direction.xyz, rayPayload.normal, eta);
+						rays[current_buffer_index].in_use = true;
+						current_buffer_index++;
+					}	
+				}
+				// exiting
+				else
+				{
+					if(current_buffer_index < buffer_size)
+					{
+						rays[i].child_refract_id = current_buffer_index;
+
+						vec3 temp_dir = refract(rays[i].direction.xyz, -rayPayload.normal, 1.0/eta);
+
+						if(temp_dir != vec3(0.0))
+						{
+							//generate new ray
+							rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
+							rays[current_buffer_index].direction.xyz = temp_dir;
+							rays[current_buffer_index].in_use = true;
+							current_buffer_index++;
+						}
+						else
+						{
+							// Total internal reflection
+
+							//generate new ray
+							rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
+							rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, -rayPayload.normal);;
+							rays[current_buffer_index].in_use = true;
+							current_buffer_index++;
+						}
+					}
+				}
+
+				rays[i].in_use = false;
+			}
+		}
+
+		if(used_count == 0)
+			break;
+	}
+
+	// Step two: accumulate colour
+	for(int i = current_buffer_index - 1; i >= 0; i--)
+	{
+		float accum = rays[i].base_color;
+
+		if(rays[i].child_reflect_id != -1)
+			accum = mix(accum, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
+
+		if(rays[i].child_refract_id != -1)
+			accum = mix(accum, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
+
+		rays[i].accumulated_color = accum;
+	}
+
+	return rays[0].accumulated_color;
+}
+
+
+
+
+
+// Max. number of recursion is passed via a specialization constant
+layout (constant_id = 0) const int MAX_RECURSION = 0;
+
+void main() 
+{
+	float red = get_ray0_red(red_eta);
+	float green = get_ray0_green(green_eta);
+	float blue = get_ray0_blue(blue_eta);
+
+	vec3 color = vec3(red, green, blue);
+
+	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(color, 0.0));
 }
