@@ -205,6 +205,19 @@ float get_ray0(const int channel, const float eta)
 	{
 		float accum = rays[i].base_color;
 
+
+		/*
+		const float eta = (red_eta + green_eta + blue_eta)/3.0;
+		const float FresnelPower = 5.0;
+		const float F = ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
+
+		vec3 incident = normalize(rays[i].pos);
+		vec3 normal = normalize(rays[i].normal);
+
+		float Ratio = F + (1.0 - F) * pow((1.0 - dot(-incident, normal)), FresnelPower);
+		*/
+
+		
 		if(rays[i].child_reflect_id != -1)
 			accum = mix(accum, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
 
