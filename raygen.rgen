@@ -200,6 +200,7 @@ float get_ray0(const int channel, const float eta)
 			break;
 	}
 
+
 	// Step two: accumulate colour
 	for(int i = current_buffer_index - 1; i >= 0; i--)
 	{
@@ -213,6 +214,8 @@ float get_ray0(const int channel, const float eta)
 
 		rays[i].accumulated_color = accum;
 	}
+
+
 
 	/*
 	for(int i = current_buffer_index - 1; i >= 0; i--)
