@@ -56,6 +56,16 @@ struct RayPayload {
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
 
 
+
+
+
+
+
+
+
+
+
+
 float get_ray0(const int channel, const float eta)
 {
 	const int buffer_size = 16;
@@ -83,8 +93,8 @@ float get_ray0(const int channel, const float eta)
 		rays[i].in_use = false;
 		rays[i].child_reflect_id = -1;
 		rays[i].child_refract_id = -1;
-		rays[i].base_color = 0.0;//vec3(0.0);
-		rays[i].accumulated_color = 0.0;//vec3(0.0);
+		rays[i].base_color = 0.0;
+		rays[i].accumulated_color = 0.0;
 		rays[i].reflection_constant = 0;
 		rays[i].refraction_constant = 0;
 	}
