@@ -205,29 +205,12 @@ float get_ray0(const int channel, const float eta)
 	{
 		float accum = rays[i].base_color;
 
-		// Fresnel code from some random book chapter that I can't find using Google any more
-		const float eta = (red_eta + green_eta + blue_eta)/3.0;
-		const float FresnelPower = 2.5;
-		const float F = ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
+		if(rays[i].child_reflect_id != -1)
+			accum = mix(accum, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
 
-		const vec3 incident = normalize(rays[i].direction.xyz);
-		const vec3 normal = normalize(rays[i].normal);
+		if(rays[i].child_refract_id != -1)
+			accum = mix(accum, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
 
-		float Ratio = F + (1.0 - F) * pow((1.0 - dot(-incident, normal)), FresnelPower);
-		
-		//Ratio = pow(Ratio, 2.0);
-
-		float mixed_color = 0.0;
-
-		if(rays[i].child_reflect_id != -1 && rays[i].child_refract_id != -1)
-			mixed_color = mix(rays[rays[i].child_refract_id].accumulated_color, rays[rays[i].child_reflect_id].accumulated_color, Ratio);
-		else if(rays[i].child_reflect_id != -1)
-			mixed_color = rays[rays[i].child_reflect_id].accumulated_color;
-		else if(rays[i].child_refract_id != -1)
-			mixed_color = rays[rays[i].child_refract_id].accumulated_color;
-
-		accum = mix(accum, mixed_color, 1.0 - rays[i].refraction_constant);
-	
 		rays[i].accumulated_color = accum;
 	}
 
