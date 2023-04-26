@@ -200,8 +200,6 @@ float get_ray0(const int channel, const float eta)
 			break;
 	}
 
-	
-	
 	// Step two: accumulate colour
 	for(int i = current_buffer_index - 1; i >= 0; i--)
 	{
@@ -215,10 +213,13 @@ float get_ray0(const int channel, const float eta)
 
 		rays[i].accumulated_color = accum;
 	}
-	
+
 
 
 	/*
+
+	float base_amount = 0.5;
+
 	for(int i = current_buffer_index - 1; i >= 0; i--)
 	{
 		float accum = rays[i].base_color;
@@ -233,7 +234,7 @@ float get_ray0(const int channel, const float eta)
 
 		float Ratio = F + (1.0 - F) * pow((1.0 - dot(-incident, normal)), FresnelPower);
 
-		float mixed_color = rays[i].base_color;
+		float mixed_color = 0.0;
 
 		if(rays[i].child_reflect_id != -1 && rays[i].child_refract_id != -1)
 			mixed_color = mix(rays[rays[i].child_refract_id].accumulated_color, rays[rays[i].child_reflect_id].accumulated_color, Ratio);
@@ -242,13 +243,15 @@ float get_ray0(const int channel, const float eta)
 		else if(rays[i].child_refract_id != -1)
 			mixed_color = mix(accum, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
 
-		accum = mixed_color;//mix(accum, mixed_color, 1.0 - rays[i].refraction_constant);
+		if(mixed_color != 0.0)
+		{
+			float m = min(rays[i].refraction_constant, base_amount);
+			accum = mix(accum, mixed_color, m);
+		}
 	
 		rays[i].accumulated_color = accum;
 	}
 	*/
-	
-
 
 
 	return rays[0].accumulated_color;
