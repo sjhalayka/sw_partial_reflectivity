@@ -140,7 +140,7 @@ float get_ray0(const int channel, const float eta)
 				// entering
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
 				{
-					if(current_buffer_index < buffer_size)
+					if(current_buffer_index < buffer_size && rays[i].reflection_constant != 0.0)
 					{
 						rays[i].child_reflect_id = current_buffer_index;
 
@@ -151,7 +151,7 @@ float get_ray0(const int channel, const float eta)
 						current_buffer_index++;
 					}
 
-					if(current_buffer_index < buffer_size)
+					if(current_buffer_index < buffer_size && rays[i].refraction_constant != 1.0)
 					{
 						rays[i].child_refract_id = current_buffer_index;
 
