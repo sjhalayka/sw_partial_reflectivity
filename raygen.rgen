@@ -227,7 +227,7 @@ float get_ray0(const int channel, const float eta)
 		const float eta = (red_eta + green_eta + blue_eta)/3.0;
 		const float F = ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
 		const float FresnelPower = 1.0;
-		const float Ratio = pow(1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal), FresnelPower);
+		const float Ratio = F * (1.0 - F)*pow(1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal), FresnelPower);
 
 		float mix_a = rays[i].base_color;
 
@@ -239,7 +239,7 @@ float get_ray0(const int channel, const float eta)
 		if(rays[i].child_reflect_id != -1)
 			mix_b = mix(mix_b, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
 
-		rays[i].accumulated_color = mix(mix_a, mix_b, Ratio);
+		rays[i].accumulated_color = mix(mix_a, mix_b, 1.0 - Ratio);
 	}
 	
 
