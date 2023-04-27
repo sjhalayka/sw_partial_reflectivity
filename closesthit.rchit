@@ -9,7 +9,6 @@ struct RayPayload {
 	vec3 normal;
 	float reflector;
 	float opacity;
-	vec3 pos;
 };
 
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;

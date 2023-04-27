@@ -7,7 +7,6 @@ struct ray
 	vec4 direction;
 	vec4 origin;
 	bool in_use;
-	vec3 pos;
 	vec3 normal;
 
 	int child_refract_id;
