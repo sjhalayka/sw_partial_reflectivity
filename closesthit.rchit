@@ -109,8 +109,8 @@ void main()
 
 
 	// This will be a texture sample
-	rayPayload.reflector = 0.1;//1.0;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
-	rayPayload.opacity = 0.1;
+	rayPayload.reflector = 0.5;//1.0;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
+	rayPayload.opacity = 1.0;
 
 	// This will be a texture sample
 	vec3 color = texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
