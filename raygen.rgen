@@ -117,7 +117,6 @@ float get_ray0(const int channel, const float eta)
 				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
 
 				rays[i].normal = rayPayload.normal;
-				rays[i].pos = rayPayload.pos;
 
 				if(channel == red_channel)
 					rays[i].base_color = rayPayload.color.r;
