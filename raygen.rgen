@@ -140,7 +140,7 @@ float get_ray0(const int channel, const float eta)
 				// entering
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
 				{
-					if(current_buffer_index < buffer_size && rays[i].reflection_constant != 0.0)
+					if(current_buffer_index < buffer_size)
 					{
 						rays[i].child_reflect_id = current_buffer_index;
 
@@ -151,7 +151,7 @@ float get_ray0(const int channel, const float eta)
 						current_buffer_index++;
 					}
 
-					if(current_buffer_index < buffer_size && rays[i].refraction_constant != 1.0)
+					if(current_buffer_index < buffer_size)
 					{
 						rays[i].child_refract_id = current_buffer_index;
 
@@ -229,17 +229,17 @@ float get_ray0(const int channel, const float eta)
 		const float FresnelPower = 1.0;
 		const float Ratio = F * (1.0 - F)*pow(1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal), FresnelPower);
 
-		float mix_a = rays[i].base_color;
+		float base = rays[i].base_color;
 
 		if(rays[i].child_refract_id != -1)
-			mix_a = mix(mix_a, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
+			base = mix(base, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
 
-		float mix_b = mix_a;//rays[i].base_color;
+		float refl = base;//rays[i].base_color;
 
 		if(rays[i].child_reflect_id != -1)
-			mix_b = mix(mix_b, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
+			refl = mix(refl, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
 
-		rays[i].accumulated_color = mix(mix_a, mix_b, 1.0 - Ratio);
+		rays[i].accumulated_color = mix(base, refl, 1.0 - Ratio);
 	}
 	
 
