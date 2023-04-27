@@ -108,7 +108,7 @@ void main()
 
 
 	// This will be a texture sample
-	rayPayload.reflector = 1.0;//1.0;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
+	rayPayload.reflector = 0.5;//1.0;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
 	rayPayload.opacity = 0.5;
 
 	// This will be a texture sample
