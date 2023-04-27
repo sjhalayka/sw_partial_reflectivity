@@ -202,8 +202,9 @@ float get_ray0(const int channel, const float eta)
 
 
 
+
 	/*
-	// Step two: accumulate colour without Fresnel (this works)
+	// Step two: accumulate colour without Fresnel reflection-refraction
 	for(int i = current_buffer_index - 1; i >= 0; i--)
 	{
 		float accum = rays[i].base_color;
@@ -218,39 +219,14 @@ float get_ray0(const int channel, const float eta)
 	}
 	*/
 
-	/*
-	// Step two: accumulate colour without Fresnel (this works)
-	for(int i = current_buffer_index - 1; i >= 0; i--)
-	{
-			const float eta = (red_eta + green_eta + blue_eta)/3.0;
-		const float F = ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
-		const float FresnelPower = 1.0;
-		//const float Ratio = F * (1.0 - F)*pow(1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal), FresnelPower);
-		const float Ratio = (1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal));
 
-		float accum = rays[i].base_color;
-
-//		if(rays[i].child_reflect_id != -1)
-//			accum = mix(accum, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
-
-		if(rays[i].child_refract_id != -1)
-			accum = mix(accum, rays[rays[i].child_refract_id].accumulated_color, (1.0 - rays[i].refraction_constant));
-
-		float accum2 = accum;// rays[i].base_color;
-
-		if(rays[i].child_reflect_id != -1)
-			accum2 = mix(accum2, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
-
-
-		rays[i].accumulated_color = mix(accum, accum2, 1.0);//Ratio);
-	}
-	*/
 
 
 
 	
 	
-	// Step two: this is the Fresnel code that does not really work
+	// Step two: this is the Fresnel reflection-refraction code
+	// Start at the tips of the branches, work backwards to the root
 	for(int i = current_buffer_index - 1; i >= 0; i--)
 	{
 		bool pure_refraction = false;
@@ -279,12 +255,12 @@ float get_ray0(const int channel, const float eta)
 		else if(both)
 		{
 			// Fake the Fresnel refraction-reflection
-			const float Ratio = 1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal);
+			const float ratio = 1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal);
 
 			float reflect_accum = mix(rays[i].base_color, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
 			float refract_accum = mix(rays[i].base_color, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
 		
-			accum = mix(refract_accum, reflect_accum, Ratio);
+			accum = mix(refract_accum, reflect_accum, ratio);
 		}
 		else if(pure_refraction)
 		{
@@ -297,9 +273,6 @@ float get_ray0(const int channel, const float eta)
 		
 		rays[i].accumulated_color = accum;
 	}
-	
-
-
 
 	// Return root ray segment colour
 	return rays[0].accumulated_color;
