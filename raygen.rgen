@@ -230,7 +230,7 @@ float get_ray0(const int channel, const float eta)
 		if(rays[i].child_refract_id != -1)
 			accum = mix(accum, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
 
-		float accum2 = rays[i].base_color;
+		float accum2 = accum;//rays[i].base_color;
 
 		if(rays[i].child_reflect_id != -1)
 			accum2 = mix(accum2, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
@@ -238,7 +238,8 @@ float get_ray0(const int channel, const float eta)
 		const float eta = (red_eta + green_eta + blue_eta)/3.0;
 		const float F = ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
 		const float FresnelPower = 1.0;
-		const float Ratio = F * (1.0 - F)*pow(1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal), FresnelPower);
+		//const float Ratio = F * (1.0 - F)*pow(1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal), FresnelPower);
+		const float Ratio = 1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal);
 
 		rays[i].accumulated_color = mix(accum, accum2, Ratio);
 	}
