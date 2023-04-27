@@ -254,22 +254,22 @@ float get_ray0(const int channel, const float eta)
 	for(int i = current_buffer_index - 1; i >= 0; i--)
 	{
 		bool pure_refraction = false;
+		bool pure_reflection = false;
+		bool neither = false;
+		bool both = false;
+
 		if(rays[i].child_refract_id != -1 && rays[i].child_reflect_id == -1)
 			pure_refraction = true;
 
-		bool pure_reflection = false;
 		if(rays[i].child_refract_id == -1 && rays[i].child_reflect_id != -1)
 			pure_reflection = true;
 
-		bool neither = false;
 		if(rays[i].child_refract_id == -1 && rays[i].child_reflect_id == -1)
 			neither = true;
 
-		bool both = false;
 		if(rays[i].child_refract_id != -1 && rays[i].child_reflect_id != -1)
 			both = true;
 
-		float base = rays[i].base_color;
 		float accum = 0.0;
 
 		if(neither)
@@ -278,17 +278,13 @@ float get_ray0(const int channel, const float eta)
 		}
 		else if(both)
 		{
-			const float eta = (red_eta + green_eta + blue_eta)/3.0;
-			const float F = ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
-			const float FresnelPower = 1.0;
-			//const float Ratio = F * (1.0 - F)*pow(1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal), FresnelPower);
-			const float Ratio = (1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal));
+			// Fake the Fresnel refraction-reflection
+			const float Ratio = 1.0 - dot(-normalize(rays[i].direction.xyz), rays[i].normal);
 
 			float reflect_accum = mix(rays[i].base_color, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
 			float refract_accum = mix(rays[i].base_color, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
 		
 			accum = mix(refract_accum, reflect_accum, Ratio);
-		
 		}
 		else if(pure_refraction)
 		{
@@ -299,26 +295,7 @@ float get_ray0(const int channel, const float eta)
 			accum = mix(rays[i].base_color, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
 		}
 		
-
-
-
-		/*
-
-		float base = rays[i].base_color;
-
-		if(rays[i].child_refract_id != -1)
-			base = mix(base, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
-
-		float refl = rays[i].base_color;
-
-		if(rays[i].child_reflect_id != -1)
-			refl = mix(refl, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
-			*/
-
-
-
-
-		rays[i].accumulated_color = accum;// mix(base, refl, 1.0 - Ratio);
+		rays[i].accumulated_color = accum;
 	}
 	
 
