@@ -70,8 +70,8 @@ layout(location = 0) rayPayloadEXT RayPayload rayPayload;
 
 float get_ray0(const int channel, const float eta)
 {
-	const int buffer_size = 8;
-	const int max_level = 3;
+	const int buffer_size = 32;
+	const int max_level = 4;
 	ray rays[buffer_size];
 	int current_buffer_index = 0;
 
