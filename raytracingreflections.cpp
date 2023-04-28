@@ -18,6 +18,7 @@ public:
 		glm::mat4 viewInverse;
 		glm::mat4 projInverse;
 		glm::vec4 lightPos;
+		glm::vec3 camera_pos;
 		int32_t vertexSize;
 	} uniformData;
 	vks::Buffer ubo;
@@ -68,8 +69,9 @@ public:
 		vkglTF::memoryPropertyFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 		vkglTF::descriptorBindingFlags = vkglTF::DescriptorBindingFlags::ImageBaseColor | vkglTF::DescriptorBindingFlags::ImageNormalMap;
 		const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
-		//scene.loadFromFile(getAssetPath() + "models/ped_tex/ped_tex.gltf", vulkanDevice, queue, glTFLoadingFlags);
+		//scene.loadFromFile(getAssetPath() + "models/reflection_scene.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		//scene.loadFromFile("C:/temp/ped_tex/ped_tex.gltf", vulkanDevice, queue, glTFLoadingFlags);
+		//scene.loadFromFile("C:/temp/ball/ball.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
 		scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		
@@ -545,6 +547,8 @@ public:
 		uniformData.projInverse = glm::inverse(camera.matrices.perspective);
 		uniformData.viewInverse = glm::inverse(camera.matrices.view);
 		uniformData.lightPos = glm::vec4(cos(glm::radians(timer * 360.0f)) * 40.0f, -50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f, 25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f, 0.0f);
+		uniformData.camera_pos = camera.position;
+
 		// Pass the vertex size to the shader for unpacking vertices
 		uniformData.vertexSize = sizeof(vkglTF::Vertex);
 		memcpy(ubo.mapped, &uniformData, sizeof(uniformData));
