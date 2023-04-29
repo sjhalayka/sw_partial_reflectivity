@@ -17,7 +17,12 @@ public:
 	struct UniformData {
 		glm::mat4 viewInverse;
 		glm::mat4 projInverse;
+
 		glm::vec4 lightPos;
+		glm::vec4 lightPos2;
+		//glm::vec3 lightColor;
+		//glm::vec3 lightColor2;
+
 		glm::vec3 camera_pos;
 		int32_t vertexSize;
 	} uniformData;
@@ -549,11 +554,20 @@ public:
 	{
 		uniformData.projInverse = glm::inverse(camera.matrices.perspective);
 		uniformData.viewInverse = glm::inverse(camera.matrices.view);
+		
 		uniformData.lightPos = glm::vec4(cos(glm::radians(timer * 360.0f)) * 40.0f, -50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f, 25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f, 0.0f);
+		uniformData.lightPos2 = uniformData.lightPos;
+		uniformData.lightPos2.x = -uniformData.lightPos2.x;
+
+		//uniformData.lightColor = glm::vec3(1, 1, 1);
+		//uniformData.lightColor2 = glm::vec3(1, 1, 1);
+
 		uniformData.camera_pos = camera.position;
 
 		// Pass the vertex size to the shader for unpacking vertices
 		uniformData.vertexSize = sizeof(vkglTF::Vertex);
+
+
 		memcpy(ubo.mapped, &uniformData, sizeof(uniformData));
 	}
 

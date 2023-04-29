@@ -26,6 +26,7 @@ layout(binding = 2, set = 0) uniform UBO
 	mat4 viewInverse;
 	mat4 projInverse;
 	vec4 lightPos;
+	vec4 lightPos2;
 	vec3 camera_pos;
 	int vertexSize;
 } ubo;
