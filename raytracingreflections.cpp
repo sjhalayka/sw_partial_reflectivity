@@ -74,7 +74,9 @@ public:
 		//scene.loadFromFile("C:/temp/ball/ball.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
 		scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
-		
+		//scene.loadFromFile("C:/temp/robrau/vortex.gltf", vulkanDevice, queue, glTFLoadingFlags);
+
+
 		VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
 		VkDeviceOrHostAddressConstKHR indexBufferDeviceAddress{};
 
@@ -342,6 +344,7 @@ public:
 		std::vector<VkDescriptorSetLayoutBinding> materialSetLayoutBindings = {
 			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 0),
 			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 1),
+			//vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 1),
 		};
 
 		VkDescriptorSetLayoutCreateInfo materialSetLayoutCI = vks::initializers::descriptorSetLayoutCreateInfo(materialSetLayoutBindings);

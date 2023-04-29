@@ -16,6 +16,7 @@ layout(location = 2) rayPayloadEXT bool shadowed;
 
 layout(binding = 0, set = 1) uniform sampler2D baseColorSampler;
 layout(binding = 1, set = 1) uniform sampler2D normalSampler;
+//layout(binding = 2, set = 1) uniform sampler2D metallicRoughnessSampler;
 
 hitAttributeEXT vec2 attribs;
 
@@ -107,8 +108,9 @@ void main()
 	vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
 
 	// This will be a texture sample
-	rayPayload.reflector = 0.5;//1.0;//length(texture(normalSampler, uv).rgb) / sqrt(3.0);
-	rayPayload.opacity = 0.1;
+	rayPayload.reflector = 1.0;
+	rayPayload.opacity =  pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
+
 
 	// This will be a texture sample
 	vec3 color = texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
