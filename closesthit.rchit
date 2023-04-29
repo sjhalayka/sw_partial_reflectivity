@@ -33,6 +33,7 @@ layout(binding = 2, set = 0) uniform UBO
 	mat4 projInverse;
 
 	vec4 light_positions[max_lights];
+	vec4 light_colors[max_lights];
 
 	vec3 camera_pos;
 	int vertexSize;
@@ -74,7 +75,7 @@ Vertex unpack(uint index)
 
 
 // https://github.com/daw42/glslcookbook/blob/master/chapter07/shader/shadowmap.fs
-vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec3 light_pos, vec3 frag_pos, vec3 frag_normal)
+vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec3 light_color, vec3 light_pos, vec3 frag_pos, vec3 frag_normal)
 {
 	const vec3 MaterialKs = vec3(1.0, 0.5, 0.0);
 	const vec3 MaterialKa = vec3(0.0, 0.025, 0.075);
@@ -85,7 +86,7 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec
 	const vec3 v = normalize(frag_pos);
 	const vec3 r = reflect( -s, n );
 	const float sDotN = max( dot(s,n), 0.0 ); // This second parameter affects the visibility of shadow edges
-	const vec3 diffuse = color * sDotN;
+	const vec3 diffuse = light_color * color * sDotN;
 	vec3 spec = vec3(0.0);
 
 	if(sDotN > 0.0)
@@ -94,7 +95,7 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec
 	vec3 ret = diffuse + MaterialKa;
 
 	if(do_specular)
-		ret = ret + spec;//*reflectivity;
+		ret = ret + spec;
     
 	return ret;
 }
@@ -160,7 +161,7 @@ void main()
 	vec3 color = texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 
 	rayPayload.pure_color = color;
-	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_positions[0].xyz, pos, normal);// vec3(uv, 0.0);
+	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[0].rgb, ubo.light_positions[0].xyz, pos, normal);// vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
 	
@@ -168,6 +169,6 @@ void main()
 
 	if (shadowed)
 	{
-		rayPayload.color = phongModelDiffAndSpec(false, rayPayload.reflector, color, ubo.light_positions[0].xyz, pos, normal) * 0.3;
+		rayPayload.color = phongModelDiffAndSpec(false, rayPayload.reflector, color, ubo.light_colors[0].rgb, ubo.light_positions[0].xyz, pos, normal) * 0.3;
 	}
 }
