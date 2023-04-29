@@ -148,16 +148,14 @@ void main()
 
 	// Interpolate
 	const vec3 barycentricCoords = vec3(1.0f - attribs.x - attribs.y, attribs.x, attribs.y);
-	vec3 normal = normalize(v0.normal * barycentricCoords.x + v1.normal * barycentricCoords.y + v2.normal * barycentricCoords.z);
-	vec3 pos = v0.pos * barycentricCoords.x + v1.pos * barycentricCoords.y + v2.pos * barycentricCoords.z;
-	vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
+	const vec3 normal = normalize(v0.normal * barycentricCoords.x + v1.normal * barycentricCoords.y + v2.normal * barycentricCoords.z);
+	const vec3 pos = v0.pos * barycentricCoords.x + v1.pos * barycentricCoords.y + v2.pos * barycentricCoords.z;
+	const vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
 
-	// This will be a texture sample
 	rayPayload.reflector = 1.0;
 	rayPayload.opacity = pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
 
-	// This will be a texture sample
-	vec3 color = vec3(1, 1, 1);//texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
+	vec3 color = texture(baseColorSampler, uv).rgb;
 
 	rayPayload.pure_color = color;
 	rayPayload.distance = gl_RayTmaxEXT;
@@ -166,10 +164,6 @@ void main()
 	rayPayload.color = vec3(0, 0, 0);
 
 	for (int i = 0; i < max_lights; i++)
-	{
-		bool s = get_shadow(ubo.light_positions[i].xyz, normal);
-
-		if(s == false)
-			rayPayload.color += phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, normal);
-	}
+		if(false == get_shadow(ubo.light_positions[i].xyz, rayPayload.normal))
+			rayPayload.color += phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
 }
