@@ -156,19 +156,76 @@ void main()
 	rayPayload.reflector = 1.0;
 	rayPayload.opacity =  pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
 
-
 	// This will be a texture sample
-	vec3 color = texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
+	vec3 color = vec3(1, 1, 1);//texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 
 	rayPayload.pure_color = color;
-	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[0].rgb, ubo.light_positions[0].xyz, pos, normal);// vec3(uv, 0.0);
+	//rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[0].rgb, ubo.light_positions[0].xyz, pos, normal);// vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
 	
-	shadowed = get_shadow(ubo.light_positions[0].xyz, normal);
+	int num_shadows = 0;
 
-	if (shadowed)
+	for (int i = 0; i < max_lights; i++)
 	{
-		rayPayload.color = phongModelDiffAndSpec(false, rayPayload.reflector, color, ubo.light_colors[0].rgb, ubo.light_positions[0].xyz, pos, normal) * 0.3;
+		bool s = get_shadow(ubo.light_positions[i].xyz, normal);
+		
+		if(s == true)
+			num_shadows++;
 	}
+
+	vec3 diffAndSpec = vec3(0, 0, 0);
+
+	if (num_shadows == 0)
+	{
+		for (int i = 0; i < max_lights; i++)
+		{
+			diffAndSpec += phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, normal);
+		}
+	}
+	else
+	{
+
+/*
+
+		for (int i = 0; i < max_num_lights; i++)
+		{
+			if (lightEnabled[i] == 0)
+				continue;
+
+			float s = 0;
+
+			if(lightShadowCaster[i] == 0)
+				s = 1;
+			else
+				s = get_shadow(lightPositions[i], depthMaps[i]);
+
+			vec3 phong_contrib = phongModelDiffAndSpec(true, lightPositions[i], i);            
+            vec3 shadow_contrib = s * phongModelDiffAndSpec(false, lightPositions[i], i);
+
+			diffAndSpec += mix(phong_contrib, shadow_contrib, 1.0 );
+		}
+
+
+		*/
+
+	}
+	
+	rayPayload.color = diffAndSpec;
+
+
+
+
+
+
+
+
+
+
+//	shadowed = get_shadow(ubo.light_positions[0].xyz, normal);
+
+//	if (shadowed)
+//	{
+//		rayPayload.color = phongModelDiffAndSpec(false, rayPayload.reflector, color, ubo.light_colors[0].rgb, ubo.light_positions[0].xyz, pos, normal) * 0.3;
+//	}
 }
