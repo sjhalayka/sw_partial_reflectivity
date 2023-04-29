@@ -2,6 +2,7 @@
 #extension GL_EXT_ray_tracing : require
 #extension GL_EXT_nonuniform_qualifier : enable
 
+
 struct RayPayload {
 	vec3 color;
 	vec3 pure_color;
@@ -20,13 +21,19 @@ layout(binding = 1, set = 1) uniform sampler2D normalSampler;
 
 hitAttributeEXT vec2 attribs;
 
+
+
+
+const int max_lights = 2;
+
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
 layout(binding = 2, set = 0) uniform UBO 
 {
 	mat4 viewInverse;
 	mat4 projInverse;
-	vec4 lightPos;
-	vec4 lightPos2;
+
+	vec4 light_positions[max_lights];
+
 	vec3 camera_pos;
 	int vertexSize;
 } ubo;
@@ -153,14 +160,14 @@ void main()
 	vec3 color = texture(baseColorSampler, uv).rgb;//(v0.color.rgb + v1.color.rgb + v2.color.rgb) / 3.0;
 
 	rayPayload.pure_color = color;
-	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal);// vec3(uv, 0.0);
+	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_positions[0].xyz, pos, normal);// vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
 	
-	shadowed = get_shadow(ubo.lightPos.xyz, normal);
+	shadowed = get_shadow(ubo.light_positions[0].xyz, normal);
 
 	if (shadowed)
 	{
-		rayPayload.color = phongModelDiffAndSpec(false, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal) * 0.3;
+		rayPayload.color = phongModelDiffAndSpec(false, rayPayload.reflector, color, ubo.light_positions[0].xyz, pos, normal) * 0.3;
 	}
 }
