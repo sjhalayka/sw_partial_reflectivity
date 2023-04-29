@@ -93,6 +93,42 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec
 
 
 
+
+
+bool get_shadow(const vec3 light_pos, const vec3 normal)
+{
+	// Basic lighting
+	vec3 lightVector = normalize(light_pos);
+
+	bool shadow = false;
+
+	if(dot(normal, lightVector) < 0.0)
+	{
+		shadow = true;
+	}
+	else
+	{
+		// Shadow casting
+		float tmin = 0.001;
+		float tmax = 1000.0;
+
+		vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
+		vec3 biased_origin = origin + normal * 0.01;
+
+		shadowed = true; // Make sure to set this to the default before tracing the ray!
+		traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
+		
+		if(shadowed)
+			shadow = true;
+		else
+			shadow = false;
+	}
+
+	return shadow;
+}
+
+
+
 void main()
 {
 	ivec3 index = ivec3(indices.i[3 * gl_PrimitiveID], indices.i[3 * gl_PrimitiveID + 1], indices.i[3 * gl_PrimitiveID + 2]);
@@ -119,26 +155,8 @@ void main()
 	rayPayload.color = phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.lightPos.xyz, pos, normal);// vec3(uv, 0.0);
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = normal;
-
-	// Basic lighting
-	vec3 lightVector = normalize(ubo.lightPos.xyz);
-
-	if(dot(normal, lightVector) < 0.0)
-	{
-		shadowed = true;
-	}
-	else
-	{
-		// Shadow casting
-		float tmin = 0.001;
-		float tmax = 1000.0;
-
-		vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
-		vec3 biased_origin = origin + normal * 0.01;
-
-		shadowed = true; // Make sure to set this to the default before tracing the ray!
-		traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
-	}
+	
+	shadowed = get_shadow(ubo.lightPos.xyz, normal);
 
 	if (shadowed)
 	{
