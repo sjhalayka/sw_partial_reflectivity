@@ -69,8 +69,8 @@ layout(location = 0) rayPayloadEXT RayPayload rayPayload;
 
 float get_ray0(const int channel, const float eta)
 {
-	const int buffer_size = 32;//128;
-	const int max_level = 4;//8;
+	const int buffer_size = 32;
+	const int max_level = 4;
 	ray rays[buffer_size];
 	int current_buffer_index = 0;
 
@@ -141,7 +141,7 @@ float get_ray0(const int channel, const float eta)
 				}
 
 				// ... or died trying
-				if(rays[i].level >= max_level)
+				if(rays[i].level > max_level)
 				{
 					rays[i].in_use = false;
 					continue;
