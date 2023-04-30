@@ -57,7 +57,6 @@ struct RayPayload {
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
 
 // Max. number of recursion is passed via a specialization constant
-// This isn't used any more
 layout (constant_id = 0) const int MAX_RECURSION = 0;
 
 
