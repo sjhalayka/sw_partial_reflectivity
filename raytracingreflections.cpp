@@ -379,7 +379,7 @@ public:
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
 		VkSpecializationMapEntry specializationMapEntry = vks::initializers::specializationMapEntry(0, 0, sizeof(uint32_t));
-		uint32_t maxRecursion = 8;
+		uint32_t maxRecursion = 4;
 		VkSpecializationInfo specializationInfo = vks::initializers::specializationInfo(1, &specializationMapEntry, sizeof(maxRecursion), &maxRecursion);
 
 		// Ray generation group

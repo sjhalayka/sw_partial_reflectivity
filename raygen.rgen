@@ -63,7 +63,7 @@ float get_ray0(const int channel, const float eta)
 {
 	// This algorithm stops when the buffer runs out of space,
 	// or when the rays miss everything
-	const int buffer_size = 128;
+	const int buffer_size = 32;
 
 	ray rays[buffer_size];
 	int current_buffer_index = 0;
@@ -86,16 +86,16 @@ float get_ray0(const int channel, const float eta)
 	{
 		// Some of these don't need to be initialized
 
-//		rays[i].direction = vec4(0.0);
-//		rays[i].origin = vec4(0.0);
-//		rays[i].in_use = false;
+		rays[i].direction = vec4(0.0);
+		rays[i].origin = vec4(0.0);
+		rays[i].in_use = false;
 		rays[i].child_reflect_id = -1;
 		rays[i].child_refract_id = -1;
-//		rays[i].base_color = 0.0;
-//		rays[i].accumulated_color = 0.0;
-//		rays[i].reflection_constant = 0.0;
-//		rays[i].refraction_constant = 0.0;
-//		rays[i].level = 0;
+		rays[i].base_color = 0.0;
+		rays[i].accumulated_color = 0.0;
+		rays[i].reflection_constant = 0.0;
+		rays[i].refraction_constant = 0.0;
+		rays[i].level = 0;
 	}
 
 	rays[0].direction = direction;
