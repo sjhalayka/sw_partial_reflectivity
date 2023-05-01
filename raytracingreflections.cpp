@@ -50,7 +50,7 @@ public:
 		camera.type = Camera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-		camera.setTranslation(glm::vec3(0.0f, 0.5f, -2.0f));
+		camera.setTranslation(glm::vec3(0.0f, 0.0f, -2.0f));
 		enableExtensions();
 	}
 
@@ -165,9 +165,9 @@ public:
 	*/
 	void createTopLevelAccelerationStructure()
 	{
+		static const float pi = 4.0f * atanf(1.0f);
 
-
-		static float radians = timer * 5.0f;
+		static float radians = timer * 2 * pi;
 
 		// Rotate on y axis
 		transformMatrix = {
@@ -175,7 +175,7 @@ public:
 			0.0f, 1.0f, 0.0f, 0.0f,
 			sin(radians), 0.0f, cos(radians), 0.0f };
 
-		radians = timer * 5.0f;
+		radians = timer * 2 * pi;
 
 		VkAccelerationStructureInstanceKHR instance{};
 		instance.transform = transformMatrix;
