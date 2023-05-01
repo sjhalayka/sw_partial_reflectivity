@@ -165,9 +165,6 @@ public:
 	*/
 	void createTopLevelAccelerationStructure()
 	{
-		//if(prepared)
-		//deleteAccelerationStructure(topLevelAS);
-
 		//VkTransformMatrixKHR transformMatrix = {
 		//	1.0f, 0.0f, 0.0f, 0.0f,
 		//	0.0f, 1.0f, 0.0f, 0.0f,
@@ -180,7 +177,7 @@ public:
 			0.0f, 1.0f, 0.0f, 0.0f,
 			sin(radians), 0.0f, cos(radians), 0.0f};
 
-		radians += 0.1f;
+		radians += 0.05f;
 
 		VkAccelerationStructureInstanceKHR instance{};
 		instance.transform = transformMatrix;
@@ -383,8 +380,9 @@ public:
 		*/
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
+		// We'll leave this as 0 since we do not use it
 		VkSpecializationMapEntry specializationMapEntry = vks::initializers::specializationMapEntry(0, 0, sizeof(uint32_t));
-		uint32_t maxRecursion = 8;
+		uint32_t maxRecursion = 0;
 		VkSpecializationInfo specializationInfo = vks::initializers::specializationInfo(1, &specializationMapEntry, sizeof(maxRecursion), &maxRecursion);
 
 		// Ray generation group
