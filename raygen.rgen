@@ -91,22 +91,22 @@ float get_ray0(const int channel, const float eta)
 	{
 		// Some of these don't need to be initialized
 
-		rays[i].direction = vec4(0.0);
-		rays[i].origin = vec4(0.0);
+		//rays[i].direction = vec4(0.0);
+		//rays[i].origin = vec4(0.0);
 		rays[i].in_use = false;
 		rays[i].child_reflect_id = -1;
 		rays[i].child_refract_id = -1;
-		rays[i].base_color = 0.0;
-		rays[i].accumulated_color = 0.0;
-		rays[i].reflection_constant = 0.0;
-		rays[i].refraction_constant = 0.0;
-		rays[i].level = 0;
+		//rays[i].base_color = 0.0;
+		//rays[i].accumulated_color = 0.0;
+		//rays[i].reflection_constant = 0.0;
+		//rays[i].refraction_constant = 0.0;
+		//rays[i].level = 0;
 	}
 
 	rays[0].direction = direction;
 	rays[0].origin = origin;
 	rays[0].in_use = true;
-	rays[0].level = 1;
+	rays[0].level = 0;
 	current_buffer_index++;
 
 	while(true)
@@ -141,7 +141,7 @@ float get_ray0(const int channel, const float eta)
 					continue;
 				}
 
-				if(rays[i].level > MAX_RECURSION)
+				if(rays[i].level >= MAX_RECURSION)
 				{
 					rays[i].in_use = false;
 					continue;
