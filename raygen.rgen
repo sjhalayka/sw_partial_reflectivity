@@ -288,6 +288,9 @@ float get_ray0(const int channel, const float eta)
 		
 		rays[i].accumulated_color = accum;
 	}
+	
+	// Show level depth as grayscale colour
+	//float s = 1.0 - float(rays[current_buffer_index - 1].level) / float(MAX_RECURSION);
 
 	// Return root ray segment colour
 	return rays[0].accumulated_color;
