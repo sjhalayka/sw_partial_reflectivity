@@ -297,6 +297,7 @@ float get_ray0(const int channel, const float eta)
 
 void main() 
 {
+	// Calculate chromatic aberration
 	float red = get_ray0(red_channel, red_eta);
 	float green = get_ray0(green_channel, green_eta);
 	float blue = get_ray0(blue_channel, blue_eta);
