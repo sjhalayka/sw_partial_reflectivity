@@ -640,10 +640,10 @@ public:
 		if (!prepared)
 			return;
 
-		deleteAccelerationStructure(bottomLevelAS);
+		// Do it brute force
+		// To do: There's a way to update the structure instead of 
+		// deleting and recreating it
 		deleteAccelerationStructure(topLevelAS);
-
-		createBottomLevelAccelerationStructure();
 		createTopLevelAccelerationStructure();
 
 		draw();
