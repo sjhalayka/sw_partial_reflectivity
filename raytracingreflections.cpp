@@ -16,8 +16,14 @@ public:
 
 
 	static const int max_lights = 2;
-	VkTransformMatrixKHR transformMatrix;
 
+	VkTransformMatrixKHR transformMatrix = {
+				1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f };
+	
+	clock_t start = std::clock();
+	
 	struct UniformData {
 
 		glm::mat4 viewInverse;
@@ -45,12 +51,12 @@ public:
 	VulkanExample() : VulkanRaytracingSample()
 	{
 		title = "Ray tracing shadows & reflections";
-		timerSpeed *= 0.5f;
-		camera.rotationSpeed *= 0.25f;
+		//timerSpeed *= 0.5f;
+		//camera.rotationSpeed *= 0.25f;
 		camera.type = Camera::CameraType::firstperson;
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
+		camera.setPerspective(45.0f, (float)width / (float)height, 0.001f, 10000.0f);
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-		camera.setTranslation(glm::vec3(0.0f, 0.0f, -4.5f));
+		camera.setTranslation(glm::vec3(0.0f, 0.0f, -6.0));
 		enableExtensions();
 	}
 
@@ -166,16 +172,14 @@ public:
 	void createTopLevelAccelerationStructure()
 	{
 		static const float pi = 4.0f * atanf(1.0f);
-
-		static float radians = timer * 2 * pi * 0.5f;
+		float duration = (std::clock() - start) / (float) CLOCKS_PER_SEC;
+		float radians = duration * 2.0f * pi * 0.1f;
 
 		// Rotate on y axis
 		transformMatrix = {
 			cos(radians), 0.0f, -sin(radians), 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f,
 			sin(radians), 0.0f, cos(radians), 0.0f };
-
-		radians = timer * 2 * pi * 0.5f;
 
 		VkAccelerationStructureInstanceKHR instance{};
 		instance.transform = transformMatrix;
@@ -568,7 +572,7 @@ public:
 		uniformData.projInverse = glm::inverse(camera.matrices.perspective);
 		uniformData.viewInverse = glm::inverse(camera.matrices.view);
 
-		// For rendering the normals correctly in the closesthit shader
+		// For rendering the normals correctly in the closest hit shader
 		for (size_t i = 0; i < 3; i++)
 			for (size_t j = 0; j < 4; j++)
 				uniformData.transformation_matrix[j][i] = transformMatrix.matrix[i][j];
