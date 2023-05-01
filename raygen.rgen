@@ -60,7 +60,6 @@ layout(location = 0) rayPayloadEXT RayPayload rayPayload;
 
 // Max. number of recursion is passed via a specialization constant
 layout (constant_id = 0) const int MAX_RECURSION = 0;
-
 const int buffer_size = 32;
 
 
@@ -68,7 +67,8 @@ const int buffer_size = 32;
 float get_ray0(const int channel, const float eta)
 {
 	// This algorithm stops when the buffer runs out of space,
-	// or when the rays miss everything
+	// or when the rays miss everything,
+	// or when the level is too deep
 
 	ray rays[buffer_size];
 	int current_buffer_index = 0;
@@ -134,14 +134,8 @@ float get_ray0(const int channel, const float eta)
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
 
-				// this particular ray missed everything
-				if(rayPayload.distance == -1.0)
-				{
-					rays[i].in_use = false;
-					continue;
-				}
-
-				if(rays[i].level >= MAX_RECURSION)
+				// this particular ray missed everything, or got too deep
+				if(rayPayload.distance == -1.0 || rays[i].level >= MAX_RECURSION)
 				{
 					rays[i].in_use = false;
 					continue;
