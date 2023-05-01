@@ -383,7 +383,7 @@ public:
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
 		VkSpecializationMapEntry specializationMapEntry = vks::initializers::specializationMapEntry(0, 0, sizeof(uint32_t));
-		uint32_t maxRecursion = 4;
+		uint32_t maxRecursion = 8;
 		VkSpecializationInfo specializationInfo = vks::initializers::specializationInfo(1, &specializationMapEntry, sizeof(maxRecursion), &maxRecursion);
 
 		// Ray generation group
@@ -643,6 +643,7 @@ public:
 		// Do it brute force
 		// To do: There's a way to update the structure instead of 
 		// deleting and recreating it
+		// see: https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/raytracing_extended
 		deleteAccelerationStructure(topLevelAS);
 		createTopLevelAccelerationStructure();
 
