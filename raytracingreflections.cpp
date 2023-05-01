@@ -83,7 +83,6 @@ public:
 		//scene.loadFromFile("C:/temp/ped_tex/ped_tex.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		//scene.loadFromFile("C:/temp/ball/ball.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
-		if(!prepared)
 		scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		//scene.loadFromFile("C:/temp/robrau/vortex.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
@@ -165,19 +164,24 @@ public:
 	*/
 	void createTopLevelAccelerationStructure()
 	{
+		if (prepared)
+			deleteAccelerationStructure(topLevelAS);
+
 		//VkTransformMatrixKHR transformMatrix = {
 		//	1.0f, 0.0f, 0.0f, 0.0f,
 		//	0.0f, 1.0f, 0.0f, 0.0f,
 		//	0.0f, 0.0f, 1.0f, 0.0f };
+
+
 
 		static float radians = 0.0;
 
 		VkTransformMatrixKHR transformMatrix = {
 			cos(radians), 0.0f, -sin(radians), 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f,
-			sin(radians), 0.0f, cos(radians), 0.0f};
+			sin(radians), 0.0f, cos(radians), 0.0f };
 
-		radians += 0.05f;
+		radians += 0.035f;
 
 		VkAccelerationStructureInstanceKHR instance{};
 		instance.transform = transformMatrix;
@@ -209,7 +213,7 @@ public:
 		// Get size info
 		VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo = vks::initializers::accelerationStructureBuildGeometryInfoKHR();
 		accelerationStructureBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
-		accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR;// | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR; //VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+		accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR; //VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
 		accelerationStructureBuildGeometryInfo.geometryCount = 1;
 		accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
 
@@ -230,7 +234,7 @@ public:
 
 		VkAccelerationStructureBuildGeometryInfoKHR accelerationBuildGeometryInfo = vks::initializers::accelerationStructureBuildGeometryInfoKHR();
 		accelerationBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
-		accelerationBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR;// | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR; // VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+		accelerationBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR; // VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
 		accelerationBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
 		accelerationBuildGeometryInfo.dstAccelerationStructure = topLevelAS.handle;
 		accelerationBuildGeometryInfo.geometryCount = 1;
@@ -380,9 +384,8 @@ public:
 		*/
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
-		// We'll leave this as 0 since we do not use it
 		VkSpecializationMapEntry specializationMapEntry = vks::initializers::specializationMapEntry(0, 0, sizeof(uint32_t));
-		uint32_t maxRecursion = 0;
+		uint32_t maxRecursion = 8;
 		VkSpecializationInfo specializationInfo = vks::initializers::specializationInfo(1, &specializationMapEntry, sizeof(maxRecursion), &maxRecursion);
 
 		// Ray generation group
@@ -570,7 +573,7 @@ public:
 	{
 		uniformData.projInverse = glm::inverse(camera.matrices.perspective);
 		uniformData.viewInverse = glm::inverse(camera.matrices.view);
-		
+
 		uniformData.light_positions[0] = glm::vec4(cos(glm::radians(timer * 360.0f)) * 40.0f, -50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f, 25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f, 0.0f);
 		uniformData.light_positions[1] = uniformData.light_positions[0];
 		uniformData.light_positions[1].x = -uniformData.light_positions[1].x;
@@ -634,12 +637,8 @@ public:
 		if (!prepared)
 			return;
 
-		deleteAccelerationStructure(bottomLevelAS);
-		deleteAccelerationStructure(topLevelAS);
 
-		createBottomLevelAccelerationStructure();
 		createTopLevelAccelerationStructure();
-
 		draw();
 
 
