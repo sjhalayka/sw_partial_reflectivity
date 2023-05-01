@@ -165,21 +165,17 @@ public:
 	*/
 	void createTopLevelAccelerationStructure()
 	{
-		//VkTransformMatrixKHR transformMatrix = {
-		//	1.0f, 0.0f, 0.0f, 0.0f,
-		//	0.0f, 1.0f, 0.0f, 0.0f,
-		//	0.0f, 0.0f, 1.0f, 0.0f };
 
 
+		static float radians = timer * 5.0f;
 
-		static float radians = 0.0;
-
-		 transformMatrix = {
+		// Rotate on y axis
+		transformMatrix = {
 			cos(radians), 0.0f, -sin(radians), 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f,
 			sin(radians), 0.0f, cos(radians), 0.0f };
 
-		radians += 0.035f;
+		radians = timer * 5.0f;
 
 		VkAccelerationStructureInstanceKHR instance{};
 		instance.transform = transformMatrix;
