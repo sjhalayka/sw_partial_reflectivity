@@ -83,6 +83,7 @@ public:
 		//scene.loadFromFile("C:/temp/ped_tex/ped_tex.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		//scene.loadFromFile("C:/temp/ball/ball.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
+		if(!prepared)
 		scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		//scene.loadFromFile("C:/temp/robrau/vortex.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
@@ -164,9 +165,6 @@ public:
 	*/
 	void createTopLevelAccelerationStructure()
 	{
-		if (prepared)
-			deleteAccelerationStructure(topLevelAS);
-
 		//VkTransformMatrixKHR transformMatrix = {
 		//	1.0f, 0.0f, 0.0f, 0.0f,
 		//	0.0f, 1.0f, 0.0f, 0.0f,
@@ -637,7 +635,10 @@ public:
 		if (!prepared)
 			return;
 
+		deleteAccelerationStructure(bottomLevelAS);
+		deleteAccelerationStructure(topLevelAS);
 
+		createBottomLevelAccelerationStructure();
 		createTopLevelAccelerationStructure();
 		draw();
 
