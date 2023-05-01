@@ -16,13 +16,13 @@ public:
 
 
 	static const int max_lights = 2;
-
+	VkTransformMatrixKHR transformMatrix;
 
 	struct UniformData {
 
 		glm::mat4 viewInverse;
 		glm::mat4 projInverse;
-
+		glm::mat4 transformation_matrix;
 		glm::vec4 light_positions[max_lights];
 		glm::vec4 light_colors[max_lights];
 
@@ -174,7 +174,7 @@ public:
 
 		static float radians = 0.0;
 
-		VkTransformMatrixKHR transformMatrix = {
+		 transformMatrix = {
 			cos(radians), 0.0f, -sin(radians), 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f,
 			sin(radians), 0.0f, cos(radians), 0.0f };
@@ -572,6 +572,11 @@ public:
 		uniformData.projInverse = glm::inverse(camera.matrices.perspective);
 		uniformData.viewInverse = glm::inverse(camera.matrices.view);
 
+		// For rendering the normals correctly in the closesthit shader
+		for (size_t i = 0; i < 3; i++)
+			for (size_t j = 0; j < 4; j++)
+				uniformData.transformation_matrix[j][i] = transformMatrix.matrix[i][j];
+
 		uniformData.light_positions[0] = glm::vec4(cos(glm::radians(timer * 360.0f)) * 40.0f, -50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f, 25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f, 0.0f);
 		uniformData.light_positions[1] = uniformData.light_positions[0];
 		uniformData.light_positions[1].x = -uniformData.light_positions[1].x;
@@ -640,6 +645,7 @@ public:
 
 		createBottomLevelAccelerationStructure();
 		createTopLevelAccelerationStructure();
+
 		draw();
 
 

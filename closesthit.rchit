@@ -32,6 +32,8 @@ layout(binding = 2, set = 0) uniform UBO
 	mat4 viewInverse;
 	mat4 projInverse;
 
+	mat4 transformation_matrix;
+
 	vec4 light_positions[max_lights];
 	vec4 light_colors[max_lights];
 
@@ -146,12 +148,15 @@ void main()
 	Vertex v1 = unpack(index.y);
 	Vertex v2 = unpack(index.z);
 
+
 	// Interpolate
 	const vec3 barycentricCoords = vec3(1.0f - attribs.x - attribs.y, attribs.x, attribs.y);
-	const vec3 normal = normalize(v0.normal * barycentricCoords.x + v1.normal * barycentricCoords.y + v2.normal * barycentricCoords.z);
+	vec3 normal = normalize(v0.normal * barycentricCoords.x + v1.normal * barycentricCoords.y + v2.normal * barycentricCoords.z);
 	const vec3 pos = v0.pos * barycentricCoords.x + v1.pos * barycentricCoords.y + v2.pos * barycentricCoords.z;
 	const vec2 uv = v0.uv * barycentricCoords.x + v1.uv * barycentricCoords.y + v2.uv * barycentricCoords.z;
 
+	vec4 n = ubo.transformation_matrix*vec4(normal, 0.0);
+	
 	rayPayload.reflector = 1.0;
 	rayPayload.opacity = pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
 
@@ -159,7 +164,7 @@ void main()
 
 	rayPayload.pure_color = color;
 	rayPayload.distance = gl_RayTmaxEXT;
-	rayPayload.normal = normal;
+	rayPayload.normal = n.xyz;
 	
 	rayPayload.color = vec3(0, 0, 0);
 
