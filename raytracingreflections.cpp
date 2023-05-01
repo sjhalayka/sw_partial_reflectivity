@@ -50,7 +50,7 @@ public:
 		camera.type = Camera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-		camera.setTranslation(glm::vec3(0.0f, 0.0f, -2.0f));
+		camera.setTranslation(glm::vec3(0.0f, 0.0f, -4.5f));
 		enableExtensions();
 	}
 
@@ -167,7 +167,7 @@ public:
 	{
 		static const float pi = 4.0f * atanf(1.0f);
 
-		static float radians = timer * 2 * pi;
+		static float radians = timer * 2 * pi * 0.5f;
 
 		// Rotate on y axis
 		transformMatrix = {
@@ -175,7 +175,7 @@ public:
 			0.0f, 1.0f, 0.0f, 0.0f,
 			sin(radians), 0.0f, cos(radians), 0.0f };
 
-		radians = timer * 2 * pi;
+		radians = timer * 2 * pi * 0.5f;
 
 		VkAccelerationStructureInstanceKHR instance{};
 		instance.transform = transformMatrix;

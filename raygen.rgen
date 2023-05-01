@@ -19,6 +19,8 @@ struct ray
 
 	float reflection_constant;
 	float refraction_constant;
+
+	int level;
 };
 
 
@@ -55,14 +57,13 @@ struct RayPayload {
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
 
 // Max. number of recursion is passed via a specialization constant
-// We don't explicitly use it here, so it's commented out
-// layout (constant_id = 0) const int MAX_RECURSION = 0;
+layout (constant_id = 0) const int MAX_RECURSION = 0;
 
 float get_ray0(const int channel, const float eta)
 {
 	// This algorithm stops when the buffer runs out of space,
 	// or when the rays miss everything
-	const int buffer_size = 16;
+	const int buffer_size = 128;
 
 	ray rays[buffer_size];
 	int current_buffer_index = 0;
@@ -84,22 +85,23 @@ float get_ray0(const int channel, const float eta)
 	for(int i = 0; i < buffer_size; i++)
 	{
 		// Some of these don't need to be initialized
-		// Don't initialize if you don't have to, to save cycles
 
 //		rays[i].direction = vec4(0.0);
 //		rays[i].origin = vec4(0.0);
-		rays[i].in_use = false;
+//		rays[i].in_use = false;
 		rays[i].child_reflect_id = -1;
 		rays[i].child_refract_id = -1;
 //		rays[i].base_color = 0.0;
 //		rays[i].accumulated_color = 0.0;
-//		rays[i].reflection_constant = 0;
-//		rays[i].refraction_constant = 0;
+//		rays[i].reflection_constant = 0.0;
+//		rays[i].refraction_constant = 0.0;
+//		rays[i].level = 0;
 	}
 
 	rays[0].direction = direction;
 	rays[0].origin = origin;
 	rays[0].in_use = true;
+	rays[0].level = 1;
 	current_buffer_index++;
 
 	while(true)
@@ -134,6 +136,12 @@ float get_ray0(const int channel, const float eta)
 					continue;
 				}
 
+				if(rays[i].level > MAX_RECURSION)
+				{
+					rays[i].in_use = false;
+					continue;
+				}
+
 				// entering
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
 				{
@@ -145,6 +153,7 @@ float get_ray0(const int channel, const float eta)
 						rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
 						rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
 						rays[current_buffer_index].in_use = true;
+						rays[current_buffer_index].level = rays[i].level + 1;
 						current_buffer_index++;
 					}
 
@@ -156,6 +165,7 @@ float get_ray0(const int channel, const float eta)
 						rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
 						rays[current_buffer_index].direction.xyz = refract(rays[i].direction.xyz, rayPayload.normal, eta);
 						rays[current_buffer_index].in_use = true;
+						rays[current_buffer_index].level = rays[i].level + 1;
 						current_buffer_index++;
 					}	
 				}
@@ -174,6 +184,7 @@ float get_ray0(const int channel, const float eta)
 							rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
 							rays[current_buffer_index].direction.xyz = temp_dir;
 							rays[current_buffer_index].in_use = true;
+							rays[current_buffer_index].level = rays[i].level + 1;
 							current_buffer_index++;
 						}
 						else
@@ -184,6 +195,7 @@ float get_ray0(const int channel, const float eta)
 							rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
 							rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, -rayPayload.normal);;
 							rays[current_buffer_index].in_use = true;
+							rays[current_buffer_index].level = rays[i].level + 1;
 							current_buffer_index++;
 						}
 					}
