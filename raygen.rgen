@@ -283,12 +283,9 @@ float get_ray0(const int channel, const float eta)
 	// return s;
 
 
-	// Show buffer fullness as black and white
-//	float s = 0;
-//	if(current_buffer_index >= buffer_size)
-//	return 1.0;
-//	else
-//	return 0.0;
+	// Show buffer fullness as grayscale colour
+	//float s = 1.0 - float(current_buffer_index - 1) / float(buffer_size);
+	//return s;
 
 
 
