@@ -109,6 +109,9 @@ public:
 		//scene.loadFromFile("C:/temp/ped_tex/ped_tex.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		//scene.loadFromFile("C:/temp/ball/ball.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
+
+		// This fractal_500.gltf file can be downloaded from:
+		// https://drive.google.com/file/d/1BJJSC_K8NwaH8kP4tQpxlAmc6h6N3Ii1/view
 		if(!prepared)
 			scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		//scene.loadFromFile("C:/temp/robrau/vortex.gltf", vulkanDevice, queue, glTFLoadingFlags);
