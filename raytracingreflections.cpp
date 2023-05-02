@@ -12,10 +12,16 @@ public:
 		switch (keyCode)
 		{
 		case KEY_SPACE:
-			MessageBox(0, "test", "test", MB_OK);
+			screenshot(width * 4, height * 4, "out.tga");
 		}
 	}
 
+	void screenshot(int win_x, int win_y, const char *const filename)
+	{
+		MessageBox(0, "test", "test", MB_OK);
+
+
+	}
 
 	std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
 	struct ShaderBindingTables {
