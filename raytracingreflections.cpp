@@ -12,15 +12,19 @@ public:
 		switch (keyCode)
 		{
 		case KEY_SPACE:
-			screenshot(width * 4, height * 4, "out.tga");
+			{
+				screenshot(width * 4, height * 4, "out.tga");
+				break;
+			}
 		}
 	}
 
 	void screenshot(int win_x, int win_y, const char *const filename)
 	{
+		UIOverlay.visible = false;
 		MessageBox(0, "test", "test", MB_OK);
 
-
+		UIOverlay.visible = true;
 	}
 
 	std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
@@ -660,7 +664,6 @@ public:
 		// To do: There's a way to update the structure instead of 
 		// deleting and recreating it
 		// see: https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/raytracing_extended
-
 		// Note: this causes a bug which locks the app if window becomes non-minimized
 		//deleteAccelerationStructure(topLevelAS);
 		//createTopLevelAccelerationStructure();
