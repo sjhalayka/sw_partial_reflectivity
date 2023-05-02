@@ -89,18 +89,10 @@ float get_ray0(const int channel, const float eta)
 	// Step one: make tree of ray segments
 	for(int i = 0; i < buffer_size; i++)
 	{
-		// Some of these don't need to be initialized
-
-		//rays[i].direction = vec4(0.0);
-		//rays[i].origin = vec4(0.0);
+		// Initialize buffer
 		rays[i].in_use = false;
 		rays[i].child_reflect_id = -1;
 		rays[i].child_refract_id = -1;
-		//rays[i].base_color = 0.0;
-		//rays[i].accumulated_color = 0.0;
-		//rays[i].reflection_constant = 0.0;
-		//rays[i].refraction_constant = 0.0;
-		//rays[i].level = 0;
 	}
 
 	rays[0].direction = direction;
@@ -141,7 +133,7 @@ float get_ray0(const int channel, const float eta)
 					continue;
 				}
 
-				// entering
+				// entering mesh
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
 				{
 					if(current_buffer_index < buffer_size && rays[i].reflection_constant != 0.0)
@@ -168,7 +160,7 @@ float get_ray0(const int channel, const float eta)
 						current_buffer_index++;
 					}	
 				}
-				// exiting
+				// exiting mesh
 				else
 				{
 					if(current_buffer_index < buffer_size)
@@ -283,8 +275,22 @@ float get_ray0(const int channel, const float eta)
 		rays[i].accumulated_color = accum;
 	}
 	
+
+
+
 	// Show level depth as grayscale colour
 	//float s = 1.0 - float(rays[current_buffer_index - 1].level) / float(MAX_RECURSION);
+	// return s;
+
+
+	// Show buffer fullness as black and white
+//	float s = 0;
+//	if(current_buffer_index >= buffer_size)
+//	return 1.0;
+//	else
+//	return 0.0;
+
+
 
 	// Return root ray segment colour
 	return rays[0].accumulated_color;

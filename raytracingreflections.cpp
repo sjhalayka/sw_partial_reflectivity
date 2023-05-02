@@ -53,7 +53,7 @@ public:
 		title = "Ray tracing shadows & reflections";
 		//timerSpeed *= 0.5f;
 		//camera.rotationSpeed *= 0.25f;
-		camera.type = Camera::CameraType::firstperson;
+		camera.type = Camera::CameraType::lookat;
 		camera.setPerspective(45.0f, (float)width / (float)height, 0.001f, 10000.0f);
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		camera.setTranslation(glm::vec3(0.0f, 0.0f, -6.0));
@@ -90,7 +90,7 @@ public:
 		//scene.loadFromFile("C:/temp/ball/ball.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
 		if(!prepared)
-		scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
+			scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
 		//scene.loadFromFile("C:/temp/robrau/vortex.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
 
@@ -173,13 +173,13 @@ public:
 	{
 		static const float pi = 4.0f * atanf(1.0f);
 		float duration = (std::clock() - start) / (float) CLOCKS_PER_SEC;
-		float radians = duration * 2.0f * pi * 0.1f;
+		float radians = duration * 2.0f * pi * 0.05f;
 
 		// Rotate on y axis
 		transformMatrix = {
 			cos(radians), 0.0f, -sin(radians), 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			sin(radians), 0.0f, cos(radians), 0.0f };
+			0.0f,         1.0f,  0.0f,         0.0f,
+			sin(radians), 0.0f,  cos(radians), 0.0f };
 
 		VkAccelerationStructureInstanceKHR instance{};
 		instance.transform = transformMatrix;
@@ -644,8 +644,11 @@ public:
 		// To do: There's a way to update the structure instead of 
 		// deleting and recreating it
 		// see: https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/raytracing_extended
+
+		// Note: this causes a bug which locks the app if window becomes non-minimized
 		deleteAccelerationStructure(topLevelAS);
 		createTopLevelAccelerationStructure();
+
 
 		draw();
 
