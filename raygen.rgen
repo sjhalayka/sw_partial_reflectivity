@@ -140,7 +140,7 @@ float get_ray0(const int channel, const float eta)
 					{
 						rays[i].child_reflect_id = current_buffer_index;
 
-						//generate new ray
+						//generate new ray segment
 						rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
 						rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
 						rays[current_buffer_index].in_use = true;
@@ -152,7 +152,7 @@ float get_ray0(const int channel, const float eta)
 					{
 						rays[i].child_refract_id = current_buffer_index;
 
-						//generate new ray
+						//generate new ray segment
 						rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
 						rays[current_buffer_index].direction.xyz = refract(rays[i].direction.xyz, rayPayload.normal, eta);
 						rays[current_buffer_index].in_use = true;
@@ -171,7 +171,7 @@ float get_ray0(const int channel, const float eta)
 
 						if(temp_dir != vec3(0.0))
 						{
-							//generate new ray
+							//generate new ray segment
 							rays[current_buffer_index].origin.xyz = hitPos.xyz + rayPayload.normal * 0.01f;
 							rays[current_buffer_index].direction.xyz = temp_dir;
 							rays[current_buffer_index].in_use = true;
@@ -182,7 +182,7 @@ float get_ray0(const int channel, const float eta)
 						{
 							// Total internal reflection
 
-							//generate new ray
+							//generate new ray segment
 							rays[current_buffer_index].origin.xyz = hitPos.xyz - rayPayload.normal * 0.01f;
 							rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, -rayPayload.normal);;
 							rays[current_buffer_index].in_use = true;
@@ -192,6 +192,7 @@ float get_ray0(const int channel, const float eta)
 					}
 				}
 
+				// The processing of this ray segment is complete
 				rays[i].in_use = false;
 			}
 		}

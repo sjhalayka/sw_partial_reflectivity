@@ -17,7 +17,7 @@ layout(location = 2) rayPayloadEXT bool shadowed;
 
 layout(binding = 0, set = 1) uniform sampler2D baseColorSampler;
 layout(binding = 1, set = 1) uniform sampler2D normalSampler;
-//layout(binding = 2, set = 1) uniform sampler2D metallicRoughnessSampler;
+layout(binding = 2, set = 1) uniform sampler2D occlusionSampler;
 
 hitAttributeEXT vec2 attribs;
 

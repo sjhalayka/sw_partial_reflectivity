@@ -385,7 +385,7 @@ public:
 		std::vector<VkDescriptorSetLayoutBinding> materialSetLayoutBindings = {
 			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 0),
 			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 1),
-			//vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 1),
+			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 2),
 		};
 
 		VkDescriptorSetLayoutCreateInfo materialSetLayoutCI = vks::initializers::descriptorSetLayoutCreateInfo(materialSetLayoutBindings);
@@ -592,6 +592,8 @@ public:
 		uniformData.viewInverse = glm::inverse(camera.matrices.view);
 
 		// For rendering the normals correctly in the closest hit shader
+		// This is only needed when doing moving objects where you have to 
+		// recreate / reuse the top-level acceleration structure
 		for (size_t i = 0; i < 3; i++)
 			for (size_t j = 0; j < 4; j++)
 				uniformData.transformation_matrix[j][i] = transformMatrix.matrix[i][j];
@@ -599,9 +601,10 @@ public:
 		uniformData.light_positions[0] = glm::vec4(cos(glm::radians(timer * 360.0f)) * 40.0f, -50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f, 25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f, 0.0f);
 		uniformData.light_positions[1] = uniformData.light_positions[0];
 		uniformData.light_positions[1].x = -uniformData.light_positions[1].x;
+		uniformData.light_positions[1].z = -uniformData.light_positions[1].z;
 
-		uniformData.light_colors[0] = glm::vec4(1, 1, 1, 1);
-		uniformData.light_colors[1] = glm::vec4(1, 1, 1, 1);
+		uniformData.light_colors[0] = glm::vec4(1, 0, 0, 1);
+		uniformData.light_colors[1] = glm::vec4(0, 0, 1, 1);
 
 		uniformData.camera_pos = camera.position;
 
@@ -659,7 +662,6 @@ public:
 		if (!prepared)
 			return;
 
-		// Do it brute force
 		// To do: There's a way to update the structure instead of 
 		// deleting and recreating it
 		// see: https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/raytracing_extended
