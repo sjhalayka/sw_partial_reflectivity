@@ -6,6 +6,6 @@ Supports:
 - Multiple shadow-casting lights
 - Multiple textures
 - Fast glossy (noisy) reflections
-- Fast blurry shadow edges
+- Fast blurry (noisy) shadow edges
 
 The fractal_500.gltf file can be downloaded from: https://drive.google.com/file/d/1BJJSC_K8NwaH8kP4tQpxlAmc6h6N3Ii1/view
