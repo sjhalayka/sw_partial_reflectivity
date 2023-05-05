@@ -135,6 +135,7 @@ float get_ray0(const int channel, const float eta)
 				if(rays[i].parent_id != -1)
 					refl = rays[rays[i].parent_id].reflection_constant;
 
+				// If partial reflection then do glossy
 				if(rays[i].external_reflection_ray && refl != 1.0)
 				{
 					vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
