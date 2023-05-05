@@ -148,7 +148,6 @@ void main()
 	Vertex v1 = unpack(index.y);
 	Vertex v2 = unpack(index.z);
 
-
 	// Interpolate
 	const vec3 barycentricCoords = vec3(1.0f - attribs.x - attribs.y, attribs.x, attribs.y);
 	vec3 normal = normalize(v0.normal * barycentricCoords.x + v1.normal * barycentricCoords.y + v2.normal * barycentricCoords.z);
@@ -157,7 +156,7 @@ void main()
 
 	vec4 n = ubo.transformation_matrix*vec4(normal, 0.0);
 	
-	rayPayload.reflector = 1.0;
+	rayPayload.reflector = 0.9;
 	rayPayload.opacity = pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
 
 	vec3 color = texture(baseColorSampler, uv).rgb;

@@ -13,12 +13,15 @@ struct ray
 
 	int child_refract_id;
 	int child_reflect_id;
+	int parent_id;
 
 	float base_color;
 	float accumulated_color;
 
 	float reflection_constant;
 	float refraction_constant;
+
+	bool external_reflection_ray;
 
 	int level;
 };
@@ -32,6 +35,8 @@ const float red_eta = 0.85;
 const float green_eta = 0.90;
 const float blue_eta = 0.95;
 
+
+uint prng_state = 0;
 
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
@@ -55,6 +60,17 @@ struct RayPayload {
 };
 
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
+
+
+
+float stepAndOutputRNGFloat(inout uint rngState)
+{
+  // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
+  rngState  = rngState * 747796405 + 1;
+  uint word = ((rngState >> ((rngState >> 28) + 4)) ^ rngState) * 277803737;
+  word      = (word >> 22) ^ word;
+  return float(word) / 4294967295.0f;
+}
 
 
 
@@ -93,6 +109,7 @@ float get_ray0(const int channel, const float eta)
 		rays[i].in_use = false;
 		rays[i].child_reflect_id = -1;
 		rays[i].child_refract_id = -1;
+		rays[i].parent_id = -1;
 	}
 
 	rays[0].direction = direction;
@@ -100,6 +117,8 @@ float get_ray0(const int channel, const float eta)
 	rays[0].in_use = true;
 	rays[0].level = 0;
 	current_buffer_index++;
+
+
 
 	while(true)
 	{
@@ -110,8 +129,27 @@ float get_ray0(const int channel, const float eta)
 			if(rays[i].in_use)
 			{
 				used_count++;
+			
+				float refl = 1.0;
+
+				if(rays[i].parent_id != -1)
+				{
+					refl = rays[rays[i].parent_id].reflection_constant;
+				}
+
+				if(rays[i].external_reflection_ray && refl != 1.0)
+				{
+					vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
+					vec3 dir = normalize(rays[i].direction.xyz);
+
+					if(dot(rdir, dir) < 0.0)
+						rdir = -rdir;
+			
+					rays[i].direction.xyz = mix(rdir, rays[i].direction.xyz, refl);
+				}
 
 				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
+
 				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
 
 				rays[i].normal = rayPayload.normal;
@@ -145,6 +183,8 @@ float get_ray0(const int channel, const float eta)
 						rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, rayPayload.normal);
 						rays[current_buffer_index].in_use = true;
 						rays[current_buffer_index].level = rays[i].level + 1;
+						rays[current_buffer_index].external_reflection_ray = true;
+						rays[current_buffer_index].parent_id = i;
 						current_buffer_index++;
 					}
 
@@ -157,6 +197,8 @@ float get_ray0(const int channel, const float eta)
 						rays[current_buffer_index].direction.xyz = refract(rays[i].direction.xyz, rayPayload.normal, eta);
 						rays[current_buffer_index].in_use = true;
 						rays[current_buffer_index].level = rays[i].level + 1;
+						rays[current_buffer_index].external_reflection_ray = false;
+						rays[current_buffer_index].parent_id = i;
 						current_buffer_index++;
 					}	
 				}
@@ -176,6 +218,8 @@ float get_ray0(const int channel, const float eta)
 							rays[current_buffer_index].direction.xyz = temp_dir;
 							rays[current_buffer_index].in_use = true;
 							rays[current_buffer_index].level = rays[i].level + 1;
+							rays[current_buffer_index].external_reflection_ray = false;
+							rays[current_buffer_index].parent_id = i;
 							current_buffer_index++;
 						}
 						else
@@ -187,6 +231,8 @@ float get_ray0(const int channel, const float eta)
 							rays[current_buffer_index].direction.xyz = reflect(rays[i].direction.xyz, -rayPayload.normal);;
 							rays[current_buffer_index].in_use = true;
 							rays[current_buffer_index].level = rays[i].level + 1;
+							rays[current_buffer_index].external_reflection_ray = false;
+							rays[current_buffer_index].parent_id = i;
 							current_buffer_index++;
 						}
 					}
@@ -301,6 +347,10 @@ float get_ray0(const int channel, const float eta)
 
 void main() 
 {
+	ivec2 xy = ivec2(gl_LaunchIDEXT.xy);
+	ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
+	prng_state = res.x * xy.y + xy.x;
+
 	// Calculate chromatic aberration
 	float red = get_ray0(red_channel, red_eta);
 	float green = get_ray0(green_channel, green_eta);
@@ -308,5 +358,7 @@ void main()
 
 	vec3 color = vec3(red, green, blue);
 
-	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(color, 0.0));
+
+
+	imageStore(image, xy, vec4(color, 0.0));
 }

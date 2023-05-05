@@ -111,7 +111,7 @@ public:
 		// This fractal_500.gltf file can be downloaded from:
 		// https://drive.google.com/file/d/1BJJSC_K8NwaH8kP4tQpxlAmc6h6N3Ii1/view
 		scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
-
+		//scene.loadFromFile(getAssetPath() + "models/FlightHelmet/glTF/FlightHelmet.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
 		VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
 		VkDeviceOrHostAddressConstKHR indexBufferDeviceAddress{};
@@ -385,7 +385,7 @@ public:
 		std::vector<VkDescriptorSetLayoutBinding> materialSetLayoutBindings = {
 			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 0),
 			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 1),
-			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 2),
+			//vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 2),
 		};
 
 		VkDescriptorSetLayoutCreateInfo materialSetLayoutCI = vks::initializers::descriptorSetLayoutCreateInfo(materialSetLayoutBindings);
@@ -603,8 +603,8 @@ public:
 		uniformData.light_positions[1].x = -uniformData.light_positions[1].x;
 		uniformData.light_positions[1].z = -uniformData.light_positions[1].z;
 
-		uniformData.light_colors[0] = glm::vec4(1, 0, 0, 1);
-		uniformData.light_colors[1] = glm::vec4(0, 0, 1, 1);
+		uniformData.light_colors[0] = glm::vec4(1, 1, 1, 1);
+		uniformData.light_colors[1] = glm::vec4(1, 1, 1, 1);
 
 		uniformData.camera_pos = camera.position;
 
