@@ -344,18 +344,21 @@ float get_ray0(const int channel, const float eta)
 
 void main() 
 {
-	ivec2 xy = ivec2(gl_LaunchIDEXT.xy);
-	ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
-	prng_state = res.x * xy.y + xy.x;
+	const ivec2 xy = ivec2(gl_LaunchIDEXT.xy);
+	const ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
 
 	// Calculate chromatic aberration
-	float red = get_ray0(red_channel, red_eta);
-	float green = get_ray0(green_channel, green_eta);
-	float blue = get_ray0(blue_channel, blue_eta);
 
-	vec3 color = vec3(red, green, blue);
+	prng_state = res.x * xy.y + xy.x;
+	const float red = get_ray0(red_channel, red_eta);
+	
+	prng_state = res.x * xy.y + xy.x;
+	const float green = get_ray0(green_channel, green_eta);
+	
+	prng_state = res.x * xy.y + xy.x;
+	const float blue = get_ray0(blue_channel, blue_eta);
 
-
+	const vec3 color = vec3(red, green, blue);
 
 	imageStore(image, xy, vec4(color, 0.0));
 }
