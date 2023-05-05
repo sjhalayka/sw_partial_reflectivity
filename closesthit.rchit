@@ -100,16 +100,32 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec
 		ret = ret + spec;
     
 	return ret;
+
+}
+
+uint prng_state = 0;
+
+float stepAndOutputRNGFloat(inout uint rngState)
+{
+  // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
+  rngState  = rngState * 747796405 + 1;
+  uint word = ((rngState >> ((rngState >> 28) + 4)) ^ rngState) * 277803737;
+  word      = (word >> 22) ^ word;
+  return float(word) / 4294967295.0f;
 }
 
 
-
-
-
-bool get_shadow(const vec3 light_pos, const vec3 normal)
+bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 {
 	// Basic lighting
 	vec3 lightVector = normalize(light_pos);
+
+	vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
+
+	if(dot(rdir, lightVector) < 0.0)
+		rdir = -rdir;
+			
+	lightVector = mix(rdir, lightVector, shadow_sharpness);
 
 	bool shadow = false;
 
@@ -142,6 +158,11 @@ bool get_shadow(const vec3 light_pos, const vec3 normal)
 
 void main()
 {
+	const ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
+	const ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
+
+	prng_state = res.x * pixel_pos.y + pixel_pos.x;
+
 	ivec3 index = ivec3(indices.i[3 * gl_PrimitiveID], indices.i[3 * gl_PrimitiveID + 1], indices.i[3 * gl_PrimitiveID + 2]);
 
 	Vertex v0 = unpack(index.x);
@@ -168,6 +189,6 @@ void main()
 	rayPayload.color = vec3(0, 0, 0);
 
 	for (int i = 0; i < max_lights; i++)
-		if(false == get_shadow(ubo.light_positions[i].xyz, rayPayload.normal))
+		if(false == get_shadow(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector))
 			rayPayload.color += phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
 }
