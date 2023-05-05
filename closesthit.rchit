@@ -175,7 +175,7 @@ void main()
 
 	vec4 n = ubo.transformation_matrix*vec4(normal, 0.0);
 	
-	rayPayload.reflector = 0.955;
+	rayPayload.reflector = 0.75;
 	rayPayload.opacity = pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
 
 	vec3 color = texture(baseColorSampler, uv).rgb;

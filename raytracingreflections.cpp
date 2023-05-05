@@ -194,9 +194,9 @@ public:
 	*/
 	void createTopLevelAccelerationStructure()
 	{
-		static const float pi = 4.0f * atanf(1.0f);
-		float duration = (std::clock() - start) / (float) CLOCKS_PER_SEC;
-		float radians = duration * 2.0f * pi * 0.05f;
+		//static const float pi = 4.0f * atanf(1.0f);
+		//float duration = (std::clock() - start) / (float) CLOCKS_PER_SEC;
+		//float radians = duration * 2.0f * pi * 0.05f;
 
 		//// Rotate on y axis
 		//transformMatrix = {
