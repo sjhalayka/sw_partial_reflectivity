@@ -160,8 +160,7 @@ void main()
 {
 	const ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
 	const ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
-
-	prng_state = res.x * pixel_pos.y + pixel_pos.x;
+	prng_state = res.x * pixel_pos.y + pixel_pos.x; // Each pixel gets its own seed
 
 	ivec3 index = ivec3(indices.i[3 * gl_PrimitiveID], indices.i[3 * gl_PrimitiveID + 1], indices.i[3 * gl_PrimitiveID + 2]);
 
