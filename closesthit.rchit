@@ -117,7 +117,6 @@ float stepAndOutputRNGFloat(inout uint rngState)
 
 bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 {
-	// Basic lighting
 	vec3 lightVector = normalize(light_pos);
 
 	vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
@@ -160,7 +159,7 @@ void main()
 {
 	const ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
 	const ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
-	prng_state = res.x * pixel_pos.y + pixel_pos.x; // Each pixel gets its own seed
+	prng_state = res.x * pixel_pos.y + pixel_pos.x; // Each pixel gets its own unique seed
 
 	ivec3 index = ivec3(indices.i[3 * gl_PrimitiveID], indices.i[3 * gl_PrimitiveID + 1], indices.i[3 * gl_PrimitiveID + 2]);
 
