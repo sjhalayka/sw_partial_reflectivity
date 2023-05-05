@@ -62,7 +62,7 @@ struct RayPayload {
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
 
 
-
+// See: https://github.com/nvpro-samples/vk_mini_path_tracer/blob/main/vk_mini_path_tracer/shaders/raytrace.comp.glsl#L26
 float stepAndOutputRNGFloat(inout uint rngState)
 {
   // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
