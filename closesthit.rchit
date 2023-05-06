@@ -103,8 +103,11 @@ vec3 phongModelDiffAndSpec(bool do_specular, float reflectivity, vec3 color, vec
 
 }
 
+
+
 uint prng_state = 0;
 
+// See: https://github.com/nvpro-samples/vk_mini_path_tracer/blob/main/vk_mini_path_tracer/shaders/raytrace.comp.glsl#L26
 float stepAndOutputRNGFloat(inout uint rngState)
 {
   // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
@@ -124,10 +127,9 @@ bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 	if(dot(rdir, lightVector) < 0.0)
 		rdir = -rdir;
 	
-	// Suit to taste
 	// This way the shadows stay dynamic to some degree
-	if(shadow_sharpness < 0.25)
-		shadow_sharpness = 0.25;
+	if(shadow_sharpness < 0.5)
+		shadow_sharpness = 0.5;
 
 	lightVector = mix(rdir, lightVector, shadow_sharpness);
 
