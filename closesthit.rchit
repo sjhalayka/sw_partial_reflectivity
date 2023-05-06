@@ -126,8 +126,8 @@ bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 	
 	// Suit to taste
 	// This way the shadows stay dynamic to some degree
-	if(shadow_sharpness < 0.5)
-		shadow_sharpness = 0.5;
+	if(shadow_sharpness < 0.25)
+		shadow_sharpness = 0.25;
 
 	lightVector = mix(rdir, lightVector, shadow_sharpness);
 
@@ -180,7 +180,7 @@ void main()
 
 	vec4 n = ubo.transformation_matrix*vec4(normal, 0.0);
 	
-	rayPayload.reflector = 0.0;
+	rayPayload.reflector = 0.9;
 	rayPayload.opacity = pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
 
 	vec3 color = texture(baseColorSampler, uv).rgb;
