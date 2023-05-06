@@ -138,6 +138,8 @@ float get_ray0(const int channel, const float eta)
 				// If partial reflection then do glossy
 				if(rays[i].external_reflection_ray && refl != 1.0)
 				{
+					// Pseudorandomize the direction of the ray
+					// in order to get blurry (glossy) reflections
 					vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
 
 					if(dot(rdir, normalize(rays[i].direction.xyz)) < 0.0)

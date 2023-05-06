@@ -122,12 +122,15 @@ bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 {
 	vec3 lightVector = normalize(light_pos);
 
+	// Pseudorandomize the direction of the light
+	// in order to get blurry shadows
 	vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
 
 	if(dot(rdir, lightVector) < 0.0)
 		rdir = -rdir;
 	
 	// This way the shadows stay dynamic to some degree
+	// I mean, how blurry do you need the edges to be?
 	if(shadow_sharpness < 0.5)
 		shadow_sharpness = 0.5;
 
