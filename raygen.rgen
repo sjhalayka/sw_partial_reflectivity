@@ -156,11 +156,12 @@ float get_ray0(const int channel, const float eta)
 				
 				rays[i].normal = rayPayload.normal;
 
-				if(rays[i].level == 0)
-				{
-					const ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
+				// Do first bounce normals, for use with denoising
+				//if(rays[i].level == 0)
+				//{
+				//	const ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
 					//imageStore(first_bounce_normals_image, pixel_pos, vec4(rays[i].normal, 0.0));
-				}
+				//}
 
 				if(channel == red_channel)
 					rays[i].base_color = rayPayload.color.r;
