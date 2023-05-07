@@ -126,6 +126,7 @@ bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 	// in order to get blurry shadows
 	vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
 
+	// Stick to the correct hemisphere
 	if(dot(rdir, lightVector) < 0.0)
 		rdir = -rdir;
 	

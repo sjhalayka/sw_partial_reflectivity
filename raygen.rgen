@@ -135,13 +135,14 @@ float get_ray0(const int channel, const float eta)
 				if(rays[i].parent_id != -1)
 					refl = rays[rays[i].parent_id].reflection_constant;
 
-				// If partial reflection then do glossy
+				// If partial reflection then do glossy	
 				if(rays[i].external_reflection_ray && refl != 1.0)
 				{
 					// Pseudorandomize the direction of the ray
 					// in order to get blurry (glossy) reflections
 					vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
 
+					// Stick to the correct hemisphere
 					if(dot(rdir, normalize(rays[i].direction.xyz)) < 0.0)
 						rdir = -rdir;
 			

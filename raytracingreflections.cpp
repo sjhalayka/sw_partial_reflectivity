@@ -1,6 +1,9 @@
 #include "VulkanRaytracingSample.h"
 #include "VulkanglTFModel.h"
 
+
+
+
 class VulkanExample : public VulkanRaytracingSample
 {
 public:
@@ -602,7 +605,10 @@ public:
 			for (size_t j = 0; j < 4; j++)
 				uniformData.transformation_matrix[j][i] = transformMatrix.matrix[i][j];
 
-		uniformData.light_positions[0] = glm::vec4(cos(glm::radians(timer * 360.0f)) * 40.0f, -50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f, 25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f, 0.0f);
+
+		const float speed = 5.0f;
+		
+		uniformData.light_positions[0] = glm::vec4(cos(glm::radians(timer * 360.0f)) * speed, -50.0f + sin(glm::radians(timer * 360.0f)) * speed, 25.0f + sin(glm::radians(timer * 360.0f)) * speed, 0.0f);
 		uniformData.light_positions[1] = uniformData.light_positions[0];
 		uniformData.light_positions[1].x = -uniformData.light_positions[1].x;
 		uniformData.light_positions[1].z = -uniformData.light_positions[1].z;
