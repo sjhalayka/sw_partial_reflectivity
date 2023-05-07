@@ -4,8 +4,6 @@
 #include <vector>
 using std::vector;
 
-//#include <OpenImageDenoise/oidn.hpp>
-//#pragma comment(lib, "OpenImageDenoise")
 
 
 class VulkanExample : public VulkanRaytracingSample
@@ -34,27 +32,6 @@ public:
 		UIOverlay.visible = true;
 	}
 
-
-	//// https://alain.xyz/blog/ray-tracing-denoising
-	//void denoise(void)
-	//{
-	//	unsigned win_x = width;
-	//	unsigned win_y = height;
-
-	//	vector<float> color(3 * win_x * win_y);
-	//	vector<float> normal(3 * win_x * win_y);
-	//	vector<float> output(3 * win_x * win_y);
-
-	//	oidn::DeviceRef device = oidn::newDevice();
-	//	device.commit();
-	//	oidn::FilterRef filter = device.newFilter("RT");
-	//	filter.setImage("color", &color[0], oidn::Format::Float3, win_x, win_y);
-	//	filter.setImage("normal", &normal[0], oidn::Format::Float3, win_x, win_y);
-	//	filter.setImage("output", &output[0], oidn::Format::Float3, win_x, win_y);
-	//	filter.set("hdr", true);
-	//	filter.commit();
-	//	filter.execute();
-	//}
 
 
 
