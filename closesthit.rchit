@@ -130,8 +130,8 @@ bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 	if(dot(rdir, lightVector) < 0.0)
 		rdir = -rdir;
 	
-	// This way the shadows stay dynamic to some degree
-	// I mean, how blurry do you need the edges to be?
+	// Keep the shadows stay dynamic to some degree
+	// I mean, how blurry do you really need the edges to be?
 	if(shadow_sharpness < 0.5)
 		shadow_sharpness = 0.5;
 

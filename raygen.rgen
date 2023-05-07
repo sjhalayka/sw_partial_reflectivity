@@ -40,13 +40,15 @@ uint prng_state = 0;
 
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
-layout(binding = 1, set = 0, rgba8) uniform image2D image;
+layout(binding = 1, set = 0, rgba8) uniform image2D color_image;
 layout(binding = 2, set = 0) uniform CameraProperties 
 {
 		mat4 viewInverse;
 		mat4 projInverse;
 		vec3 camera_pos;
 } cam;
+
+// layout(binding = 3, set = 0, rgba8) uniform image2D first_bounce_normals_image;
 
 
 struct RayPayload {
@@ -150,10 +152,15 @@ float get_ray0(const int channel, const float eta)
 				}
 
 				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
-
 				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
-
+				
 				rays[i].normal = rayPayload.normal;
+
+				if(rays[i].level == 0)
+				{
+					const ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
+					//imageStore(first_bounce_normals_image, pixel_pos, vec4(rays[i].normal, 0.0));
+				}
 
 				if(channel == red_channel)
 					rays[i].base_color = rayPayload.color.r;
@@ -364,5 +371,5 @@ void main()
 
 	const vec3 color = vec3(red, green, blue);
 
-	imageStore(image, pixel_pos, vec4(color, 0.0));
+	imageStore(color_image, pixel_pos, vec4(color, 0.0));
 }
