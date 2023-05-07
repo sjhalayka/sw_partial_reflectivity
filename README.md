@@ -8,4 +8,8 @@ Supports:
 - Fast glossy (noisy) reflections
 - Fast blurry (noisy) shadow edges
 
+Soon to support:
+- Large-format screenshots
+- 3D texture lookup for volumetric effects
+
 The fractal_500.gltf file can be downloaded from: https://drive.google.com/file/d/1BJJSC_K8NwaH8kP4tQpxlAmc6h6N3Ii1/view
