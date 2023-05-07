@@ -1,6 +1,13 @@
 #include "VulkanRaytracingSample.h"
 #include "VulkanglTFModel.h"
 
+#include <vector>
+using std::vector;
+
+//#include <OpenImageDenoise/oidn.hpp>
+//#pragma comment(lib, "OpenImageDenoise")
+
+
 
 
 
@@ -19,6 +26,11 @@ public:
 				screenshot(width * 4, height * 4, "out.tga");
 				break;
 			}
+		//case KEY_SPACE:
+		//	{
+		//		denoise();
+		//		break;
+		//	}
 		}
 	}
 
@@ -29,6 +41,32 @@ public:
 
 		UIOverlay.visible = true;
 	}
+
+
+	// https://alain.xyz/blog/ray-tracing-denoising
+	//void denoise(void)
+	//{
+	//	unsigned win_x = width;
+	//	unsigned win_y = height;
+
+	//	vector<float> color(3 * win_x * win_y);
+	//	vector<float> normal(3 * win_x * win_y);
+	//	vector<float> output(3 * win_x * win_y);
+
+	//	oidn::DeviceRef device = oidn::newDevice();
+	//	device.commit();
+	//	oidn::FilterRef filter = device.newFilter("RT");
+	//	filter.setImage("color", &color[0], oidn::Format::Float3, win_x, win_y);
+	//	filter.setImage("normal", &normal[0], oidn::Format::Float3, win_x, win_y);
+	//	filter.setImage("output", &output[0], oidn::Format::Float3, win_x, win_y);
+	//	filter.set("hdr", true);
+	//	filter.commit();
+	//	filter.execute();
+	//}
+
+
+
+
 
 	std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
 	struct ShaderBindingTables {
@@ -671,6 +709,8 @@ public:
 		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
 		VulkanExampleBase::submitFrame();
 	}
+
+
 
 	virtual void render()
 	{

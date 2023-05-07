@@ -145,7 +145,7 @@ float get_ray0(const int channel, const float eta)
 					// Stick to the correct hemisphere
 					if(dot(rdir, normalize(rays[i].direction.xyz)) < 0.0)
 						rdir = -rdir;
-			
+
 					rays[i].direction.xyz = mix(rdir, rays[i].direction.xyz, refl);
 				}
 
