@@ -159,7 +159,7 @@ float get_ray0(const int channel, const float eta)
 				// Do first bounce normals, for use with denoising
 				//if(rays[i].level == 0)
 				//{
-				//	const ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
+					//const ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
 					//imageStore(first_bounce_normals_image, pixel_pos, vec4(rays[i].normal, 0.0));
 				//}
 
