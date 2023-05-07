@@ -608,7 +608,12 @@ public:
 
 		const float speed = 0.125f;
 		
-		uniformData.light_positions[0] = glm::vec4(cos(glm::radians(timer * 360.0f)) * 40.0f*speed, -50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f* speed, 25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f * speed, 0.0f);
+		uniformData.light_positions[0] = glm::vec4(
+											cos(glm::radians(timer * 360.0f)) * 40.0f*speed, 
+											-50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f* speed, 
+											25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f * speed, 
+											0.0f);
+
 		uniformData.light_positions[1] = uniformData.light_positions[0];
 		uniformData.light_positions[1].x = -uniformData.light_positions[1].x;
 		uniformData.light_positions[1].z = -uniformData.light_positions[1].z;
