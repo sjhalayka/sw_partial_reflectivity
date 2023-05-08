@@ -147,15 +147,15 @@ float get_ray0(const int channel, const float eta)
 					if(rays[i].parent_id != -1)
 						dist = distance(rays[rays[i].parent_id].origin, rays[i].origin);
 
-					dist_color = dist/10.0f;
+					dist_color = dist/15.0f; // suit to taste
 				}
-
+				
+				// If partial reflection then do glossy	
 				float refl = 1.0;
 
 				if(rays[i].parent_id != -1)
 					refl = rays[rays[i].parent_id].reflection_constant;
 
-				// If partial reflection then do glossy	
 				if(rays[i].external_reflection_ray && refl != 1.0)
 				{
 					// Pseudorandomize the direction of the ray
@@ -169,6 +169,7 @@ float get_ray0(const int channel, const float eta)
 					rays[i].direction.xyz = mix(rdir, rays[i].direction.xyz, refl);
 				}
 
+				// Finally, trace the ray
 				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
 				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
 				
@@ -181,7 +182,7 @@ float get_ray0(const int channel, const float eta)
 				else
 					rays[i].base_color = rayPayload.color.b;
 				
-				rays[i].base_color += dist_color;
+				rays[i].base_color += dist_color; // In case of fog
 
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
