@@ -22,6 +22,7 @@ struct ray
 	float refraction_constant;
 
 	bool external_reflection_ray;
+	bool external_refraction_ray;
 
 	int level;
 };
@@ -111,12 +112,16 @@ float get_ray0(const int channel, const float eta)
 		rays[i].child_reflect_id = -1;
 		rays[i].child_refract_id = -1;
 		rays[i].parent_id = -1;
+		rays[i].external_reflection_ray = false;
+		rays[i].external_refraction_ray = false;
 	}
 
 	rays[0].direction = direction;
 	rays[0].origin = origin;
 	rays[0].in_use = true;
 	rays[0].level = 0;
+	rays[0].external_reflection_ray = true;
+	rays[0].external_refraction_ray = false;
 	current_buffer_index++;
 
 
@@ -131,6 +136,20 @@ float get_ray0(const int channel, const float eta)
 			{
 				used_count++;
 			
+				float dist_color = 0.0;
+				
+				// Do some white fog
+				// It really makes the image better
+				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
+				{
+					float dist = 0.0;
+
+					if(rays[i].parent_id != -1)
+						dist = distance(rays[rays[i].parent_id].origin, rays[i].origin);
+
+					dist_color = dist/10.0f;
+				}
+
 				float refl = 1.0;
 
 				if(rays[i].parent_id != -1)
@@ -162,6 +181,8 @@ float get_ray0(const int channel, const float eta)
 				else
 					rays[i].base_color = rayPayload.color.b;
 				
+				rays[i].base_color += dist_color;
+
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
 
@@ -185,6 +206,7 @@ float get_ray0(const int channel, const float eta)
 						rays[current_buffer_index].in_use = true;
 						rays[current_buffer_index].level = rays[i].level + 1;
 						rays[current_buffer_index].external_reflection_ray = true;
+						rays[current_buffer_index].external_refraction_ray = false;
 						rays[current_buffer_index].parent_id = i;
 						current_buffer_index++;
 					}
@@ -199,6 +221,7 @@ float get_ray0(const int channel, const float eta)
 						rays[current_buffer_index].in_use = true;
 						rays[current_buffer_index].level = rays[i].level + 1;
 						rays[current_buffer_index].external_reflection_ray = false;
+						rays[current_buffer_index].external_refraction_ray = false;
 						rays[current_buffer_index].parent_id = i;
 						current_buffer_index++;
 					}	
@@ -220,6 +243,7 @@ float get_ray0(const int channel, const float eta)
 							rays[current_buffer_index].in_use = true;
 							rays[current_buffer_index].level = rays[i].level + 1;
 							rays[current_buffer_index].external_reflection_ray = false;
+							rays[current_buffer_index].external_refraction_ray = true;
 							rays[current_buffer_index].parent_id = i;
 							current_buffer_index++;
 						}
@@ -233,6 +257,7 @@ float get_ray0(const int channel, const float eta)
 							rays[current_buffer_index].in_use = true;
 							rays[current_buffer_index].level = rays[i].level + 1;
 							rays[current_buffer_index].external_reflection_ray = false;
+							rays[current_buffer_index].external_refraction_ray = false;
 							rays[current_buffer_index].parent_id = i;
 							current_buffer_index++;
 						}
