@@ -1,5 +1,6 @@
 #version 460
 #extension GL_EXT_ray_tracing : require
+#extension GL_EXT_nonuniform_qualifier : enable
 
 
 struct ray
@@ -38,16 +39,23 @@ const float blue_eta = 0.95;
 
 
 uint prng_state = 0;
-
+const int max_lights = 2;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
 layout(binding = 1, set = 0, rgba8) uniform image2D color_image;
-layout(binding = 2, set = 0) uniform CameraProperties 
+layout(binding = 2, set = 0) uniform UBO 
 {
-		mat4 viewInverse;
-		mat4 projInverse;
-		vec3 camera_pos;
-} cam;
+	mat4 viewInverse;
+	mat4 projInverse;
+
+	mat4 transformation_matrix;
+
+	vec4 light_positions[max_lights];
+	vec4 light_colors[max_lights];
+
+	vec3 camera_pos;
+	int vertexSize;
+} ubo;
 
 
 
@@ -62,7 +70,7 @@ struct RayPayload {
 };
 
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
-
+layout(location = 2) rayPayloadEXT bool shadowed;
 
 // See: https://github.com/nvpro-samples/vk_mini_path_tracer/blob/main/vk_mini_path_tracer/shaders/raytrace.comp.glsl#L26
 float stepAndOutputRNGFloat(inout uint rngState)
@@ -74,6 +82,55 @@ float stepAndOutputRNGFloat(inout uint rngState)
   return float(word) / 4294967295.0f;
 }
 
+
+
+
+
+bool get_shadow(vec3 o, vec3 d, const vec3 light_pos, const vec3 normal, float shadow_sharpness)
+{
+	vec3 lightVector = normalize(light_pos);
+
+	// Pseudorandomize the direction of the light
+	// in order to get blurry shadows
+//	vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
+
+	// Stick to the correct hemisphere
+//	if(dot(rdir, lightVector) < 0.0)
+//		rdir = -rdir;
+	
+	// Keep the shadows stay dynamic to some degree
+	// I mean, how blurry do you really need the edges to be?
+//	if(shadow_sharpness < 1.0)
+//		shadow_sharpness = 1.0;
+
+//	lightVector = mix(rdir, lightVector, shadow_sharpness);
+
+	bool shadow = false;
+
+	if(dot(normal, lightVector) < 0.0)
+	{
+		shadow = true;
+	}
+	else
+	{
+		// Shadow casting
+		float tmin = 0.001;
+		float tmax = 1000.0;
+
+		vec3 origin = o + d*0.01;//gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
+		vec3 biased_origin = origin + normal * 0.01;
+
+		shadowed = true; // Make sure to set this to the default before tracing the ray!
+		traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
+		
+		if(shadowed)
+			shadow = true;
+		else
+			shadow = false;
+	}
+
+	return shadow;
+}
 
 
 // Max. number of recursion is passed via a specialization constant
@@ -95,9 +152,9 @@ float get_ray0(const int channel, const float eta)
 	const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
 	vec2 d = inUV * 2.0 - 1.0;
 
-	vec4 origin = cam.viewInverse * vec4(0,0,0,1);
-	vec4 target = cam.projInverse * vec4(d.x, d.y, 1, 1) ;
-	vec4 direction = cam.viewInverse*vec4(normalize(target.xyz / target.w), 0);
+	vec4 origin = ubo.viewInverse * vec4(0,0,0,1);
+	vec4 target = ubo.projInverse * vec4(d.x, d.y, 1, 1) ;
+	vec4 direction = ubo.viewInverse*vec4(normalize(target.xyz / target.w), 0);
 
 	uint rayFlags = gl_RayFlagsOpaqueEXT;
 	uint cullMask = 0xff;
@@ -142,12 +199,16 @@ float get_ray0(const int channel, const float eta)
 				// It really makes the image better
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
 				{
-					float dist = 0.0;
-
 					if(rays[i].parent_id != -1)
-						dist = distance(rays[rays[i].parent_id].origin, rays[i].origin);
+						if(true == get_shadow(rays[i].origin.xyz, rays[i].origin.xyz - ubo.light_positions[0].xyz, ubo.light_positions[0].xyz, rays[i].normal, 1.0))
+							dist_color = 1;
 
-					dist_color = dist/15.0f; // suit to taste
+				//	float dist = 0.0;
+
+				//	if(rays[i].parent_id != -1)
+				//		dist = distance(rays[rays[i].parent_id].origin, rays[i].origin);
+
+				//	dist_color = dist/15.0f; // suit to taste
 				}
 				
 				// If partial reflection then do glossy	
