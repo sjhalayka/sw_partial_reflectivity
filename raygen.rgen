@@ -143,6 +143,12 @@ vec3 aabb_max = vec3(2.5, 2.5, 2.5);
 
 
 
+float get_sample(float s, float t, float u)
+{
+//	this will eventually be a 3D texture sample
+	return 1.0;
+}
+
 
 bool BBoxIntersect(const vec3 boxMin, const vec3 boxMax, const vec3 origin, const vec3 dir, out float out_t0, out float out_t1)
 {
@@ -251,9 +257,9 @@ float get_ray0(const int channel, const float eta)
 
 
 				float dist_color = 0.0;
+				float dist_opacity = 0.0;
 				
 				// Do some white fog
-				// It really makes the image better
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
 				{
 					float t0 = 0.0;
@@ -263,11 +269,8 @@ float get_ray0(const int channel, const float eta)
 					 {
 						vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
 						vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
-	
 						const int num_steps = 20;
-
 						vec3 step = (start - end)/float(num_steps);
-
 						vec3 curr_step = start;
 
 						for(int j = 0; j < num_steps; j++)
@@ -275,19 +278,45 @@ float get_ray0(const int channel, const float eta)
 							for(int k = 0; k < max_lights; k++)
 							{
 								if(false == get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0))
+								{
 									dist_color += 1.0 / 10.0 / float(num_steps);
-							}
+									continue;
+
+									vec3 light_steps_start = curr_step;
+									vec3 light_steps_end = ubo.light_positions[k].xyz;
+
+									const int num_light_steps = 20;
+
+									vec3 light_step = (light_steps_start - light_steps_end)/float(num_light_steps);
+
+									vec3 curr_light_step = light_steps_start;
+
+									float light_color = 1.0;
+									float light_opacity = 1.0;
+
+									for(int l = 0; l < num_light_steps; l++)
+									{
+										light_color -= get_sample(0, 0, 0) / float(num_light_steps);
+										light_opacity += 1.0 / float(num_light_steps);
+
+										curr_light_step += light_step;
+									}
+							
+									if(light_color <= 0)
+									{
+										dist_color += light_color;
+										dist_opacity += light_opacity;
+									}
+								}
+								else
+								{
+									dist_color += 0.0;
+									dist_opacity += 1.0 / float(num_steps);
+								}
+							}	
 		
 							curr_step += step;
 						}
-
-
-						//if(get_shadow(rays[i].origin.xyz, ubo.light_positions[0].xyz, rays[i].normal, 1.0))
-						//if(get_shadow(rayPayload.wro, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[0].xyz, rayPayload.normal, 1.0))
-						//dist_color = 0.0;
-						//else
-						//dist_color = distance(start, end) / 20.0f;
-
 					 }
 				}
 
@@ -308,10 +337,12 @@ float get_ray0(const int channel, const float eta)
 				else
 					rays[i].base_color = rayPayload.color.b;
 				
+				rays[i].base_color = mix(rays[i].base_color, dist_color, dist_opacity);
+
 				//rays[i].base_color += dist_color; // In case of fog
 
-				rays[i].base_color += dist_color;
-//				rays[i].base_color /= 2.0;
+				//rays[i].base_color += dist_color;
+				//rays[i].base_color /= 2.0;
 
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
