@@ -269,10 +269,10 @@ float get_ray0(const int channel, const float eta)
 					{
 						const float target_step_length = 0.25;
 
-						vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
-						vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
+						const vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
+						const vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
 						const float num_steps = floor(distance(start, end) / target_step_length);
-						vec3 step = (start - end) / num_steps;
+						const vec3 step = (start - end) / num_steps;
 
 						vec3 curr_step = start;
 
