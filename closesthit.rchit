@@ -10,6 +10,10 @@ struct RayPayload {
 	vec3 normal;
 	float reflector;
 	float opacity;
+	vec3 pos;
+	vec3 wro;
+	vec3 wrd;
+	float hitt;
 };
 
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;
@@ -132,8 +136,8 @@ bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 	
 	// Keep the shadows stay dynamic to some degree
 	// I mean, how blurry do you really need the edges to be?
-	if(shadow_sharpness < 0.75)
-		shadow_sharpness = 0.75;
+	if(shadow_sharpness < 1)
+		shadow_sharpness = 1;
 
 	lightVector = mix(rdir, lightVector, shadow_sharpness);
 
@@ -195,6 +199,10 @@ void main()
 	rayPayload.distance = gl_RayTmaxEXT;
 	rayPayload.normal = n.xyz;
 	
+	rayPayload.wro = gl_WorldRayOriginEXT;
+	rayPayload.wrd = gl_WorldRayDirectionEXT;
+	rayPayload.hitt = gl_HitTEXT;
+
 	rayPayload.color = vec3(0, 0, 0);
 
 	for (int i = 0; i < max_lights; i++)

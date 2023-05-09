@@ -8,6 +8,10 @@ struct RayPayload {
 	vec3 normal;
 	float reflector;
 	float opacity;
+	vec3 pos;
+	vec3 wro;
+	vec3 wrd;
+	float hitt;
 };
 
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;
@@ -26,4 +30,7 @@ void main()
 	rayPayload.normal = vec3(0.0f);
 	rayPayload.reflector = 0.0f;
 	rayPayload.opacity = 1.0;
+	rayPayload.wro = vec3(0.0);
+	rayPayload.wrd = vec3(0.0);
+	rayPayload.hitt = 0.0;
 }
