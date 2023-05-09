@@ -291,32 +291,42 @@ float get_ray0(const int channel, const float eta)
 									const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
 									const vec3 light_step = (light_steps_start - light_steps_end)/float(light_num_steps);
 									
+									float light_t0 = 0;
+									float light_t1 = 0;
+									/*
+									if(BBoxIntersect(aabb_min, aabb_max, light_steps_start, normalize(light_steps_start - light_steps_end), light_t0, light_t1))
+									{
+										const vec3 bbox_start = light_steps_start + normalize(light_steps_start - light_steps_end)*light_t0;
+										const vec3 bbox_end = light_steps_start + normalize(light_steps_start - light_steps_end)*light_t1;
+									
+										float d = distance(bbox_start, bbox_end);
+
+										dist_color += 1/d;
+									}
+									*/
+									
+									
 									vec3 light_curr_step = light_steps_start;
 
 									float light_color = 0.0;
-									float light_opacity = 0.0;
 
 									for(float l = 0.0; l < light_num_steps; l += 1.0)
 									{
-										light_color += get_sample(light_curr_step)*0.00005;
-										light_opacity += 0.001;
+										light_color += get_sample(light_curr_step)*0.0001;
 
 										light_curr_step += light_step;
 									}
-							
-									if(light_color > 1)
-										light_color = 1;
 
-									if(light_opacity > 1)
-										light_opacity = 1;
-										
-									dist_color += light_color;
-									dist_opacity += light_opacity;
-								}
-								else
-								{
-									dist_color += 0.0;
-									dist_opacity += 0.001;
+									if(dist_opacity < 1.0)
+									{
+										dist_color += clamp(light_color, 0.0, 1.0);
+										dist_opacity += 0.01;
+									}
+								
+									
+
+
+
 								}
 							}	
 		
@@ -342,9 +352,9 @@ float get_ray0(const int channel, const float eta)
 				else
 					rays[i].base_color = rayPayload.color.b;
 				
-				//rays[i].base_color = mix(rays[i].base_color, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
+				rays[i].base_color = mix(rays[i].base_color, rays[i].base_color + dist_color, clamp(dist_opacity, 0.0, 1.0));
 
-				rays[i].base_color += dist_color; // In case of fog
+				//rays[i].base_color += dist_color; // In case of fog
 
 				//rays[i].base_color += dist_color;
 				//rays[i].base_color /= 2.0;
