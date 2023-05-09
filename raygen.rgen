@@ -199,16 +199,16 @@ float get_ray0(const int channel, const float eta)
 				// It really makes the image better
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
 				{
+					//if(rays[i].parent_id != -1)
+					//	if(true == get_shadow(rays[i].origin.xyz, rays[i].origin.xyz - ubo.light_positions[0].xyz, ubo.light_positions[0].xyz, rays[i].normal, 1.0))
+					//		dist_color = 1;
+
+					float dist = 0.0;
+
 					if(rays[i].parent_id != -1)
-						if(true == get_shadow(rays[i].origin.xyz, rays[i].origin.xyz - ubo.light_positions[0].xyz, ubo.light_positions[0].xyz, rays[i].normal, 1.0))
-							dist_color = 1;
+						dist = distance(rays[rays[i].parent_id].origin, rays[i].origin);
 
-				//	float dist = 0.0;
-
-				//	if(rays[i].parent_id != -1)
-				//		dist = distance(rays[rays[i].parent_id].origin, rays[i].origin);
-
-				//	dist_color = dist/15.0f; // suit to taste
+					dist_color = dist/15.0f; // suit to taste
 				}
 				
 				// If partial reflection then do glossy	
