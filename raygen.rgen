@@ -270,7 +270,7 @@ float get_ray0(const int channel, const float eta)
 
 					if(BBoxIntersect(aabb_min, aabb_max, rays[i].origin.xyz, rays[i].direction.xyz, t0, t1))
 					{
-						const float target_step_length = 0.125;
+						const float target_step_length = 0.25;
 
 						const vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
 						const vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
@@ -308,7 +308,8 @@ float get_ray0(const int channel, const float eta)
 								}
 							}	
 
-							dist_opacity += 0.0001;
+
+							dist_opacity += 0.0005;
 
 							curr_step += step;
 						}
@@ -332,7 +333,7 @@ float get_ray0(const int channel, const float eta)
 				else
 					rays[i].base_color = rayPayload.color.b;
 				
-				rays[i].base_color = mix(rays[i].base_color, dist_color, clamp(dist_opacity, 0.0, 1.0));
+				rays[i].base_color = mix(rays[i].base_color, dist_color, dist_opacity);
 
 				//rays[i].base_color += dist_color; // In case of fog
 
