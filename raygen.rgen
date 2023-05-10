@@ -309,6 +309,7 @@ float get_ray0(const int channel, const float eta)
 							}	
 
 							dist_opacity += 0.0001;
+
 							curr_step += step;
 						}
 					}
