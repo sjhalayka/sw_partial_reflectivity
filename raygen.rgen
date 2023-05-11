@@ -232,9 +232,11 @@ float get_ray0(const int channel, const float eta)
 				}
 
 				
+				float dist_color = 0.0;
+				float dist_opacity = 0.0;
 
 
-				/*
+				
 				// Do some simple white fog
 				// It really makes the image better
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
@@ -246,7 +248,7 @@ float get_ray0(const int channel, const float eta)
 
 					dist_color = dist/10.0f; // suit to taste
 				}
-				*/
+				
 
 
 
@@ -259,9 +261,7 @@ float get_ray0(const int channel, const float eta)
 
 
 
-
-				float dist_color = 0.0;
-				float dist_opacity = 0.0;
+				/*
 
 				// Do some white fog
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
@@ -271,7 +271,7 @@ float get_ray0(const int channel, const float eta)
 
 					if(BBoxIntersect(aabb_min, aabb_max, rays[i].origin.xyz, rays[i].direction.xyz, t0, t1))
 					{
-						const float target_step_length = 0.25;
+						const float target_step_length = 0.125;
 
 						const vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
 						const vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
@@ -313,7 +313,7 @@ float get_ray0(const int channel, const float eta)
 
 									float trans = 1.0 - dist_opacity;
 									dist_color = dist_color + trans*clamp(light_color, 0.0, 1.0);
-									dist_opacity = dist_opacity + trans*0.05;
+									dist_opacity = dist_opacity + trans*0.01;
 								}
 							}	
 
@@ -323,7 +323,7 @@ float get_ray0(const int channel, const float eta)
 				}
 
 
-
+				*/
 
 
 
@@ -339,9 +339,9 @@ float get_ray0(const int channel, const float eta)
 				else
 					rays[i].base_color = rayPayload.color.b;
 				
-				rays[i].base_color = mix(rays[i].base_color, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
+				//rays[i].base_color = mix(rays[i].base_color, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 
-				//rays[i].base_color += dist_color; // In case of fog
+				rays[i].base_color += dist_color; // In case of fog
 
 				//rays[i].base_color += dist_color;
 				//rays[i].base_color /= 2.0;
