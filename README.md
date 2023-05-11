@@ -7,9 +7,9 @@ Supports:
 - Multiple textures
 - Fast glossy (noisy) reflections
 - Fast blurry (noisy) shadow edges
-
-Soon to support:
 - Large-format screenshots
+- 
+Soon to support:
 - Depth of field effects
 - 3D texture lookup for volumetric effects
 
