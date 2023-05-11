@@ -10,6 +10,8 @@ using std::ofstream;
 #include <ios>
 using std::ios;
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 
 class VulkanExample : public VulkanRaytracingSample
@@ -35,9 +37,9 @@ public:
 	}
 
 
-	void screenshot(uint32_t size_x, uint32_t size_y, const char* filename)
+	void screenshot(const uint32_t size_x, const uint32_t size_y, const char* filename)
 	{
-		VkDeviceSize size = size_x * size_y * 4; // number of bytes
+		const VkDeviceSize size = size_x * size_y * 4; // number of bytes
 
 		// Create screenshot image
 		createScreenshotStorageImage(VK_FORMAT_R8G8B8A8_UNORM, { size_x, size_y, 1 });
@@ -108,12 +110,12 @@ public:
 		// Copy pixel data
 		VK_CHECK_RESULT(screenshotStagingBuffer.map());
 
-		uint8_t* data = new uint8_t[size];
-		memcpy(data, screenshotStagingBuffer.mapped, size);
+		vector<uint8_t> data(size);
+		memcpy(&data[0], screenshotStagingBuffer.mapped, size);
 
 
-
-
+		
+		/*
 
 		// Set up Targa TGA image data.
 		unsigned char  idlength = 0;
@@ -131,6 +133,9 @@ public:
 		unsigned char  imagedescriptor = 0;
 		vector<char> idstring;
 
+		*/
+
+
 		for (uint32_t i = 0; i < size_x; i++)
 		{
 			for (uint32_t j = 0; j < size_y; j++)
@@ -138,62 +143,65 @@ public:
 				size_t index = 4 * (j * size_x + i);
 
 				unsigned char temp_char;
-				temp_char = data[index + 0];
-				data[index + 0] = data[index + 2];
-				data[index + 2] = temp_char;
+				//temp_char = data[index + 0];
+				//data[index + 0] = data[index + 2];
+				//data[index + 2] = temp_char;
 				data[index + 3] = 255;
 			}
 		}
 
-		if (1)//true == reverse_rows)
-		{
-			// Reverse row order
-			short unsigned int num_rows_to_swap = py;
-			vector<unsigned char> buffer(px * 4);
+	//	if (1)//true == reverse_rows)
+	//	{
+	//		// Reverse row order
+	//		short unsigned int num_rows_to_swap = py;
+	//		vector<unsigned char> buffer(px * 4);
 
-			if (0 != py % 2)
-				num_rows_to_swap--;
+	//		if (0 != py % 2)
+	//			num_rows_to_swap--;
 
-			num_rows_to_swap /= 2;
+	//		num_rows_to_swap /= 2;
 
-			for (short unsigned int i = 0; i < num_rows_to_swap; i++)
-			{
-				size_t y_first = i * px * 4;
-				size_t y_last = (py - 1 - i) * px * 4;
+	//		for (short unsigned int i = 0; i < num_rows_to_swap; i++)
+	//		{
+	//			size_t y_first = i * px * 4;
+	//			size_t y_last = (py - 1 - i) * px * 4;
 
-				memcpy(&buffer[0], &data[y_first], px * 4 * sizeof(unsigned char));
-				memcpy(&data[y_first], &data[y_last], px * 4 * sizeof(unsigned char));
-				memcpy(&data[y_last], &buffer[0], px * 4 * sizeof(unsigned char));
-			}
-		}
+	//			memcpy(&buffer[0], &data[y_first], px * 4 * sizeof(unsigned char));
+	//			memcpy(&data[y_first], &data[y_last], px * 4 * sizeof(unsigned char));
+	//			memcpy(&data[y_last], &buffer[0], px * 4 * sizeof(unsigned char));
+	//		}
+	//	}
 
-		// Write Targa TGA file to disk.
-		ofstream out(filename, ios::binary);
+	//	// Write Targa TGA file to disk.
+	//	ofstream out(filename, ios::binary);
 
-		if (!out.is_open())
-		{
-	//		cout << "Failed to open TGA file for writing: " << filename << endl;
-			return;
-		}
+	//	if (!out.is_open())
+	//	{
+	////		cout << "Failed to open TGA file for writing: " << filename << endl;
+	//		return;
+	//	}
 
-		out.write(reinterpret_cast<char*>(&idlength), 1);
-		out.write(reinterpret_cast<char*>(&colourmaptype), 1);
-		out.write(reinterpret_cast<char*>(&datatypecode), 1);
-		out.write(reinterpret_cast<char*>(&colourmaporigin), 2);
-		out.write(reinterpret_cast<char*>(&colourmaplength), 2);
-		out.write(reinterpret_cast<char*>(&colourmapdepth), 1);
-		out.write(reinterpret_cast<char*>(&x_origin), 2);
-		out.write(reinterpret_cast<char*>(&y_origin), 2);
-		out.write(reinterpret_cast<char*>(&px), 2);
-		out.write(reinterpret_cast<char*>(&py), 2);
-		out.write(reinterpret_cast<char*>(&bitsperpixel), 1);
-		out.write(reinterpret_cast<char*>(&imagedescriptor), 1);
+	//	out.write(reinterpret_cast<char*>(&idlength), 1);
+	//	out.write(reinterpret_cast<char*>(&colourmaptype), 1);
+	//	out.write(reinterpret_cast<char*>(&datatypecode), 1);
+	//	out.write(reinterpret_cast<char*>(&colourmaporigin), 2);
+	//	out.write(reinterpret_cast<char*>(&colourmaplength), 2);
+	//	out.write(reinterpret_cast<char*>(&colourmapdepth), 1);
+	//	out.write(reinterpret_cast<char*>(&x_origin), 2);
+	//	out.write(reinterpret_cast<char*>(&y_origin), 2);
+	//	out.write(reinterpret_cast<char*>(&px), 2);
+	//	out.write(reinterpret_cast<char*>(&py), 2);
+	//	out.write(reinterpret_cast<char*>(&bitsperpixel), 1);
+	//	out.write(reinterpret_cast<char*>(&imagedescriptor), 1);
+	//	out.write(reinterpret_cast<char*>(&data[0]), size_x * size_y * 4 * sizeof(unsigned char));
+	//	out.close();
 
-		out.write(reinterpret_cast<char*>(&data[0]), size_x * size_y * 4 * sizeof(unsigned char));
 
-		out.close();
 
-		delete[] data;
+		int result = stbi_write_png(filename, size_x, size_y, 4, &data[0], 0);
+
+
+
 
 		// Update descriptor back to normal
 		{
@@ -211,7 +219,8 @@ public:
 	void createScreenshotStorageImage(VkFormat format, VkExtent3D extent)
 	{
 		// Release ressources if image is to be recreated
-		if (screenshotStorageImage.image != VK_NULL_HANDLE) {
+		if (0)//screenshotStorageImage.image != VK_NULL_HANDLE)
+		{
 			vkDestroyImageView(device, screenshotStorageImage.view, nullptr);
 			vkDestroyImage(device, screenshotStorageImage.image, nullptr);
 			vkFreeMemory(device, screenshotStorageImage.memory, nullptr);
@@ -255,6 +264,7 @@ public:
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_GENERAL,
 			{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
 		vulkanDevice->flushCommandBuffer(cmdBuffer, queue);
 	}
 
@@ -940,16 +950,16 @@ public:
 
 		if (do_screenshot)
 		{
-			screenshot(width * 4, height * 4, "v_rt_reflect.tga");
+			screenshot(width * 6, height * 6, "v_rt_reflect.png");
 			do_screenshot = false;
 		}
 		else
 		{
 			draw();
-
-			if (!paused || camera.updated)
-				updateUniformBuffers();
 		}
+
+		if (!paused || camera.updated)
+			updateUniformBuffers();
 	}
 };
 
