@@ -235,6 +235,12 @@ float get_ray0(const int channel, const float eta)
 
 
 				/*
+
+
+				
+				float dist_color = 0.0;
+				float dist_opacity = 0.0;
+
 				// Do some simple white fog
 				// It really makes the image better
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
@@ -271,7 +277,7 @@ float get_ray0(const int channel, const float eta)
 
 					if(BBoxIntersect(aabb_min, aabb_max, rays[i].origin.xyz, rays[i].direction.xyz, t0, t1))
 					{
-						const float target_step_length = 0.25;
+						const float target_step_length = 0.125;
 
 						const vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
 						const vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
@@ -282,13 +288,17 @@ float get_ray0(const int channel, const float eta)
 
 						for(float j = 0; j < num_steps; j += 1.0)
 						{
+							float lights_color = 0.0;
+
 							for(int k = 0; k < max_lights; k++)
 							{
 								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
+								float light_color = 1.0;
+
 								if(shadow)
 								{
-								
+									light_color = 0.0;
 								}
 								else
 								{
@@ -299,8 +309,6 @@ float get_ray0(const int channel, const float eta)
 									
 									vec3 light_curr_step = light_steps_start;
 
-									float light_color = 1.0;
-
 									for(float l = 0.0; l < light_num_steps; l += 1.0)
 									{
 										if(light_color <= 0 || false == in_aabb(light_curr_step, aabb_min, aabb_max))
@@ -310,12 +318,14 @@ float get_ray0(const int channel, const float eta)
 
 										light_curr_step += light_step;
 									}
-
-									float trans = 1.0 - dist_opacity;
-									dist_color = dist_color + trans*clamp(light_color, 0.0, 1.0);
-									dist_opacity = dist_opacity + trans*0.05;
 								}
-							}	
+
+								lights_color += clamp(light_color, 0.0, 1.0);
+							}
+							
+							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
+							dist_color = dist_color + trans * lights_color;
+							dist_opacity = dist_opacity + trans* 0.01 * lights_color;
 
 							curr_step += step;
 						}
@@ -340,12 +350,7 @@ float get_ray0(const int channel, const float eta)
 					rays[i].base_color = rayPayload.color.b;
 				
 				if(dist_color != 0.0)
-				rays[i].base_color = mix(rays[i].base_color, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
-
-				//rays[i].base_color += dist_color; // In case of fog
-
-				//rays[i].base_color += dist_color;
-				//rays[i].base_color /= 2.0;
+					rays[i].base_color = mix(rays[i].base_color, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;

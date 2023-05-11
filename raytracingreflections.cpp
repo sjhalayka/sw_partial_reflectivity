@@ -10,6 +10,9 @@ using std::ofstream;
 #include <ios>
 using std::ios;
 
+#include <mutex>
+using std::mutex;
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
@@ -21,6 +24,7 @@ public:
 	AccelerationStructure topLevelAS{};
 
 	bool do_screenshot = false;
+	//mutex m;
 
 	virtual void keyPressed(uint32_t keyCode)
 	{
@@ -39,6 +43,8 @@ public:
 
 	void screenshot(const uint32_t size_x, const uint32_t size_y, const char* filename)
 	{
+		//m.lock();
+
 		const VkDeviceSize size = size_x * size_y * 4; // number of bytes
 
 		// Create screenshot image
@@ -212,6 +218,9 @@ public:
 		// Delete screenshot image
 		deleteScreenshotStorageImage();
 		screenshotStagingBuffer.destroy();
+	
+
+		//m.unlock();
 	}
 
 
@@ -320,8 +329,6 @@ public:
 	VkDescriptorSetLayout materialSetLayout;
 
 	vkglTF::Model scene;
-
-	bool takeScreenshot{ false };
 
 	VulkanRaytracingSample::StorageImage screenshotStorageImage;
 	vks::Buffer screenshotStagingBuffer;
@@ -753,6 +760,8 @@ public:
 	*/
 	void handleResize()
 	{
+		//m.lock();
+
 		// Recreate image
 		createStorageImage(swapChain.colorFormat, { width, height, 1 });
 		// Update descriptor
@@ -760,6 +769,8 @@ public:
 		VkWriteDescriptorSet resultImageWrite = vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &storageImageDescriptor);
 		vkUpdateDescriptorSets(device, 1, &resultImageWrite, 0, VK_NULL_HANDLE);
 		resized = false;
+
+		//m.unlock();
 	}
 
 	/*
@@ -950,7 +961,7 @@ public:
 
 		if (do_screenshot)
 		{
-			screenshot(width * 6, height * 6, "v_rt_reflect.png");
+			screenshot(width * 4, height * 4, "v_rt_reflect.png");
 			do_screenshot = false;
 		}
 
