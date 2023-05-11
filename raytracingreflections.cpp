@@ -4,7 +4,16 @@
 #include <vector>
 using std::vector;
 
+#include <fstream>
+using std::ofstream;
 
+#include <ios>
+using std::ios;
+
+
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 class VulkanExample : public VulkanRaytracingSample
 {
@@ -18,18 +27,256 @@ public:
 		{
 		case KEY_SPACE:
 			{
-				screenshot(width * 4, height * 4, "out.tga");
+				takeScreenshot = true;
 				break;
 			}
 		}
 	}
 
-	void screenshot(int win_x, int win_y, const char *const filename)
-	{
-		UIOverlay.visible = false;
-		MessageBox(0, "test", "test", MB_OK);
 
-		UIOverlay.visible = true;
+	void screenshot(uint32_t size_x, uint32_t size_y, const char* filename)
+	{
+		VkDeviceSize size = size_x * size_y * 4;
+
+		// Create screenshot image
+		createScreenshotStorageImage(VK_FORMAT_R8G8B8A8_UNORM, { size_x, size_y, 1 });
+
+		VK_CHECK_RESULT(vulkanDevice->createBuffer(
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			&screenshotStagingBuffer,
+			size
+		));
+
+		// Update descriptor
+		{
+			VkDescriptorImageInfo storageImageDescriptor{ VK_NULL_HANDLE, screenshotStorageImage.view, VK_IMAGE_LAYOUT_GENERAL };
+			VkWriteDescriptorSet resultImageWrite = vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &storageImageDescriptor);
+			vkUpdateDescriptorSets(device, 1, &resultImageWrite, 0, VK_NULL_HANDLE);
+		}
+
+		// Prepare & flush command buffer
+		{
+			VkCommandBuffer screenshotCmdBuffer = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+
+			VkImageSubresourceRange subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+			VkDescriptorSet sets[] = { descriptorSet, scene.materials[0].descriptorSet };
+
+			vkCmdBindPipeline(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipeline);
+			vkCmdBindDescriptorSets(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipelineLayout, 0, 2, sets, 0, 0);
+
+			VkStridedDeviceAddressRegionKHR emptySbtEntry = {};
+			vkCmdTraceRaysKHR(
+				screenshotCmdBuffer,
+				&shaderBindingTables.raygen.stridedDeviceAddressRegion,
+				&shaderBindingTables.miss.stridedDeviceAddressRegion,
+				&shaderBindingTables.hit.stridedDeviceAddressRegion,
+				&emptySbtEntry,
+				size_x,
+				size_y,
+				1);
+
+			vks::tools::setImageLayout(
+				screenshotCmdBuffer,
+				screenshotStorageImage.image,
+				VK_IMAGE_LAYOUT_GENERAL,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				subresourceRange);
+
+			VkBufferImageCopy copyRegion{};
+			copyRegion.bufferOffset = 0;
+			copyRegion.bufferRowLength = 0;
+			copyRegion.bufferImageHeight = 0;
+
+			copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			copyRegion.imageSubresource.mipLevel = 0;
+			copyRegion.imageSubresource.baseArrayLayer = 0;
+			copyRegion.imageSubresource.layerCount = 1;
+
+			copyRegion.imageOffset = { 0, 0, 0 };
+			copyRegion.imageExtent.width = size_x;
+			copyRegion.imageExtent.height = size_y;
+			copyRegion.imageExtent.depth = 1;
+
+			vkCmdCopyImageToBuffer(screenshotCmdBuffer, screenshotStorageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, screenshotStagingBuffer.buffer, 1, &copyRegion);
+
+			vulkanDevice->flushCommandBuffer(screenshotCmdBuffer, queue);
+		}
+
+		// Copy pixel data
+		VK_CHECK_RESULT(screenshotStagingBuffer.map());
+
+		uint8_t* data = new uint8_t[size];
+		memcpy(data, screenshotStagingBuffer.mapped, size);
+
+
+
+
+
+		// Set up Targa TGA image data.
+		unsigned char  idlength = 0;
+		unsigned char  colourmaptype = 0;
+		unsigned char  datatypecode = 2;
+		unsigned short int colourmaporigin = 0;
+		unsigned short int colourmaplength = 0;
+		unsigned char  colourmapdepth = 0;
+		unsigned short int x_origin = 0;
+		unsigned short int y_origin = 0;
+
+		unsigned short int px = size_x;
+		unsigned short int py = size_y;
+		unsigned char  bitsperpixel = 32;
+		unsigned char  imagedescriptor = 0;
+		vector<char> idstring;
+
+		for (uint32_t i = 0; i < size_x; i++)
+		{
+			for (uint32_t j = 0; j < size_y; j++)
+			{
+				size_t index = 4 * (j * size_x + i);
+
+				unsigned char temp_char;
+				temp_char = data[index + 0];
+				data[index + 0] = data[index + 2];
+				data[index + 2] = temp_char;
+				data[index + 3] = 255;
+			}
+		}
+
+		if (1)//true == reverse_rows)
+		{
+			// Reverse row order.
+			short unsigned int num_rows_to_swap = py;
+			vector<unsigned char> buffer(px * 4);
+
+			if (0 != py % 2)
+				num_rows_to_swap--;
+
+			num_rows_to_swap /= 2;
+
+			for (short unsigned int i = 0; i < num_rows_to_swap; i++)
+			{
+				size_t y_first = i * px * 4;
+				size_t y_last = (py - 1 - i) * px * 4;
+
+				memcpy(&buffer[0], &data[y_first], px * 4 * sizeof(unsigned char));
+				memcpy(&data[y_first], &data[y_last], px * 4 * sizeof(unsigned char));
+				memcpy(&data[y_last], &buffer[0], px * 4 * sizeof(unsigned char));
+			}
+		}
+
+
+
+
+
+		// Write Targa TGA file to disk.
+		ofstream out("v_rt_reflect.tga", ios::binary);
+
+		if (!out.is_open())
+		{
+	//		cout << "Failed to open TGA file for writing: " << filename << endl;
+			return;
+		}
+
+		out.write(reinterpret_cast<char*>(&idlength), 1);
+		out.write(reinterpret_cast<char*>(&colourmaptype), 1);
+		out.write(reinterpret_cast<char*>(&datatypecode), 1);
+		out.write(reinterpret_cast<char*>(&colourmaporigin), 2);
+		out.write(reinterpret_cast<char*>(&colourmaplength), 2);
+		out.write(reinterpret_cast<char*>(&colourmapdepth), 1);
+		out.write(reinterpret_cast<char*>(&x_origin), 2);
+		out.write(reinterpret_cast<char*>(&y_origin), 2);
+		out.write(reinterpret_cast<char*>(&px), 2);
+		out.write(reinterpret_cast<char*>(&py), 2);
+		out.write(reinterpret_cast<char*>(&bitsperpixel), 1);
+		out.write(reinterpret_cast<char*>(&imagedescriptor), 1);
+
+		out.write(reinterpret_cast<char*>(&data[0]), size_x * size_y * 4 * sizeof(unsigned char));
+
+		out.close();
+
+
+
+
+
+		//int result = stbi_write_png(filename, size_x, size_y, 4, pixels, 0);
+
+
+
+
+		delete[] data;
+
+		// Update descriptor back to normal
+		{
+			VkDescriptorImageInfo storageImageDescriptor{ VK_NULL_HANDLE, storageImage.view, VK_IMAGE_LAYOUT_GENERAL };
+			VkWriteDescriptorSet resultImageWrite = vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &storageImageDescriptor);
+			vkUpdateDescriptorSets(device, 1, &resultImageWrite, 0, VK_NULL_HANDLE);
+		}
+
+		// Delete screenshot image
+		deleteScreenshotStorageImage();
+		screenshotStagingBuffer.destroy();
+	}
+
+
+	void createScreenshotStorageImage(VkFormat format, VkExtent3D extent)
+	{
+		// Release ressources if image is to be recreated
+		if (screenshotStorageImage.image != VK_NULL_HANDLE) {
+			vkDestroyImageView(device, screenshotStorageImage.view, nullptr);
+			vkDestroyImage(device, screenshotStorageImage.image, nullptr);
+			vkFreeMemory(device, screenshotStorageImage.memory, nullptr);
+			screenshotStorageImage = {};
+		}
+
+		VkImageCreateInfo image = vks::initializers::imageCreateInfo();
+		image.imageType = VK_IMAGE_TYPE_2D;
+		image.format = format;
+		image.extent = extent;
+		image.mipLevels = 1;
+		image.arrayLayers = 1;
+		image.samples = VK_SAMPLE_COUNT_1_BIT;
+		image.tiling = VK_IMAGE_TILING_OPTIMAL;
+		image.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		image.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		VK_CHECK_RESULT(vkCreateImage(vulkanDevice->logicalDevice, &image, nullptr, &screenshotStorageImage.image));
+
+		VkMemoryRequirements memReqs;
+		vkGetImageMemoryRequirements(vulkanDevice->logicalDevice, screenshotStorageImage.image, &memReqs);
+		VkMemoryAllocateInfo memoryAllocateInfo = vks::initializers::memoryAllocateInfo();
+		memoryAllocateInfo.allocationSize = memReqs.size;
+		memoryAllocateInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		VK_CHECK_RESULT(vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &screenshotStorageImage.memory));
+		VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice->logicalDevice, screenshotStorageImage.image, screenshotStorageImage.memory, 0));
+
+		VkImageViewCreateInfo colorImageView = vks::initializers::imageViewCreateInfo();
+		colorImageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		colorImageView.format = format;
+		colorImageView.subresourceRange = {};
+		colorImageView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		colorImageView.subresourceRange.baseMipLevel = 0;
+		colorImageView.subresourceRange.levelCount = 1;
+		colorImageView.subresourceRange.baseArrayLayer = 0;
+		colorImageView.subresourceRange.layerCount = 1;
+		colorImageView.image = screenshotStorageImage.image;
+		VK_CHECK_RESULT(vkCreateImageView(vulkanDevice->logicalDevice, &colorImageView, nullptr, &screenshotStorageImage.view));
+
+		VkCommandBuffer cmdBuffer = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		vks::tools::setImageLayout(cmdBuffer, screenshotStorageImage.image,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_GENERAL,
+			{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+		vulkanDevice->flushCommandBuffer(cmdBuffer, queue);
+	}
+
+	void deleteScreenshotStorageImage()
+	{
+		vkDestroyImageView(vulkanDevice->logicalDevice, screenshotStorageImage.view, nullptr);
+		vkDestroyImage(vulkanDevice->logicalDevice, screenshotStorageImage.image, nullptr);
+		vkFreeMemory(vulkanDevice->logicalDevice, screenshotStorageImage.memory, nullptr);
+
+		screenshotStorageImage = {};
 	}
 
 
@@ -76,6 +323,11 @@ public:
 	VkDescriptorSetLayout materialSetLayout;
 
 	vkglTF::Model scene;
+
+	bool takeScreenshot{ false };
+
+	VulkanRaytracingSample::StorageImage screenshotStorageImage;
+	vks::Buffer screenshotStagingBuffer;
 
 	// This sample is derived from an extended base class that saves most of the ray tracing setup boiler plate
 	VulkanExample() : VulkanRaytracingSample()
@@ -697,8 +949,14 @@ public:
 		//deleteAccelerationStructure(topLevelAS);
 		//createTopLevelAccelerationStructure();
 
-
 		draw();
+
+		if (takeScreenshot)
+		{
+			screenshot(width * 4, height * 4, "v_rt_reflect.png");
+			takeScreenshot = false;
+		}
+
 
 
 		if (!paused || camera.updated)
