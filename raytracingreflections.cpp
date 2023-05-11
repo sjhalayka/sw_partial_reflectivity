@@ -33,7 +33,7 @@ public:
 
 	void screenshot(uint32_t size_x, uint32_t size_y, const char* filename)
 	{
-		VkDeviceSize size = size_x * size_y * 4;
+		VkDeviceSize size = size_x * size_y * 4; // number of bytes
 
 		// Create screenshot image
 		createScreenshotStorageImage(VK_FORMAT_R8G8B8A8_UNORM, { size_x, size_y, 1 });
