@@ -18,13 +18,17 @@ public:
 	AccelerationStructure bottomLevelAS{};
 	AccelerationStructure topLevelAS{};
 
+	bool do_screenshot = false;
+
 	virtual void keyPressed(uint32_t keyCode)
 	{
 		switch (keyCode)
 		{
 		case KEY_SPACE:
 			{
-				screenshot(width * 4, height * 4, "v_rt_reflect.tga");
+				if (prepared)
+					do_screenshot = true;
+				
 				break;
 			}
 		}
@@ -933,18 +937,19 @@ public:
 		//deleteAccelerationStructure(topLevelAS);
 		//createTopLevelAccelerationStructure();
 
-		draw();
 
-		//if (takeScreenshot)
-		//{
-		//	screenshot(width * 4, height * 4, "v_rt_reflect.png");
-		//	takeScreenshot = false;
-		//}
+		if (do_screenshot)
+		{
+			screenshot(width * 4, height * 4, "v_rt_reflect.tga");
+			do_screenshot = false;
+		}
+		else
+		{
+			draw();
 
-
-
-		if (!paused || camera.updated)
-			updateUniformBuffers();
+			if (!paused || camera.updated)
+				updateUniformBuffers();
+		}
 	}
 };
 
