@@ -113,36 +113,13 @@ public:
 		vector<uint8_t> data(size);
 		memcpy(&data[0], screenshotStagingBuffer.mapped, size);
 
-
-		
-		/*
-
-		// Set up Targa TGA image data.
-		unsigned char  idlength = 0;
-		unsigned char  colourmaptype = 0;
-		unsigned char  datatypecode = 2;
-		unsigned short int colourmaporigin = 0;
-		unsigned short int colourmaplength = 0;
-		unsigned char  colourmapdepth = 0;
-		unsigned short int x_origin = 0;
-		unsigned short int y_origin = 0;
-
-		unsigned short int px = size_x;
-		unsigned short int py = size_y;
-		unsigned char  bitsperpixel = 32;
-		unsigned char  imagedescriptor = 0;
-		vector<char> idstring;
-
-		*/
-
-
 		for (uint32_t i = 0; i < size_x; i++)
 		{
 			for (uint32_t j = 0; j < size_y; j++)
 			{
 				size_t index = 4 * (j * size_x + i);
 
-				unsigned char temp_char;
+				//unsigned char temp_char;
 				//temp_char = data[index + 0];
 				//data[index + 0] = data[index + 2];
 				//data[index + 2] = temp_char;
@@ -171,6 +148,28 @@ public:
 	//			memcpy(&data[y_last], &buffer[0], px * 4 * sizeof(unsigned char));
 	//		}
 	//	}
+
+
+
+
+
+		// Set up Targa TGA image data.
+		//unsigned char  idlength = 0;
+		//unsigned char  colourmaptype = 0;
+		//unsigned char  datatypecode = 2;
+		//unsigned short int colourmaporigin = 0;
+		//unsigned short int colourmaplength = 0;
+		//unsigned char  colourmapdepth = 0;
+		//unsigned short int x_origin = 0;
+		//unsigned short int y_origin = 0;
+
+		//unsigned short int px = size_x;
+		//unsigned short int py = size_y;
+		//unsigned char  bitsperpixel = 32;
+		//unsigned char  imagedescriptor = 0;
+		//vector<char> idstring;
+
+		
 
 	//	// Write Targa TGA file to disk.
 	//	ofstream out(filename, ios::binary);
@@ -219,7 +218,7 @@ public:
 	void createScreenshotStorageImage(VkFormat format, VkExtent3D extent)
 	{
 		// Release ressources if image is to be recreated
-		if (0)//screenshotStorageImage.image != VK_NULL_HANDLE)
+		if (screenshotStorageImage.image != VK_NULL_HANDLE)
 		{
 			vkDestroyImageView(device, screenshotStorageImage.view, nullptr);
 			vkDestroyImage(device, screenshotStorageImage.image, nullptr);
@@ -947,15 +946,12 @@ public:
 		//deleteAccelerationStructure(topLevelAS);
 		//createTopLevelAccelerationStructure();
 
+		draw();
 
 		if (do_screenshot)
 		{
 			screenshot(width * 6, height * 6, "v_rt_reflect.png");
 			do_screenshot = false;
-		}
-		else
-		{
-			draw();
 		}
 
 		if (!paused || camera.updated)
