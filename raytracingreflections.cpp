@@ -24,7 +24,7 @@ public:
 		{
 		case KEY_SPACE:
 			{
-				takeScreenshot = true;
+				screenshot(width * 4, height * 4, "v_rt_reflect.tga");
 				break;
 			}
 		}
@@ -143,7 +143,7 @@ public:
 
 		if (1)//true == reverse_rows)
 		{
-			// Reverse row order.
+			// Reverse row order
 			short unsigned int num_rows_to_swap = py;
 			vector<unsigned char> buffer(px * 4);
 
@@ -163,12 +163,8 @@ public:
 			}
 		}
 
-
-
-
-
 		// Write Targa TGA file to disk.
-		ofstream out("v_rt_reflect.tga", ios::binary);
+		ofstream out(filename, ios::binary);
 
 		if (!out.is_open())
 		{
@@ -192,15 +188,6 @@ public:
 		out.write(reinterpret_cast<char*>(&data[0]), size_x * size_y * 4 * sizeof(unsigned char));
 
 		out.close();
-
-
-
-
-
-		//int result = stbi_write_png(filename, size_x, size_y, 4, pixels, 0);
-
-
-
 
 		delete[] data;
 
@@ -948,11 +935,11 @@ public:
 
 		draw();
 
-		if (takeScreenshot)
-		{
-			screenshot(width * 4, height * 4, "v_rt_reflect.png");
-			takeScreenshot = false;
-		}
+		//if (takeScreenshot)
+		//{
+		//	screenshot(width * 4, height * 4, "v_rt_reflect.png");
+		//	takeScreenshot = false;
+		//}
 
 
 
