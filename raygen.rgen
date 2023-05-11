@@ -36,10 +36,12 @@ const int blue_channel = 2;
 const float red_eta = 0.85;
 const float green_eta = 0.90;
 const float blue_eta = 0.95;
+ ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
+ ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
 
+const int max_lights = 2;
 
 uint prng_state = 0;
-const int max_lights = 2;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
 layout(binding = 1, set = 0, rgba8) uniform image2D color_image;
@@ -258,9 +260,8 @@ float get_ray0(const int channel, const float eta)
 
 
 
-					float dist_color = 0.0;
-					float dist_opacity = 0.0;
-
+				float dist_color = 0.0;
+				float dist_opacity = 0.0;
 
 				// Do some white fog
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
@@ -283,7 +284,13 @@ float get_ray0(const int channel, const float eta)
 						{
 							for(int k = 0; k < max_lights; k++)
 							{
-								if(false == get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0))
+								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
+
+								if(shadow)
+								{
+								
+								}
+								else
 								{
 									const vec3 light_steps_start = curr_step;
 									const vec3 light_steps_end = ubo.light_positions[k].xyz;
@@ -304,12 +311,11 @@ float get_ray0(const int channel, const float eta)
 										light_curr_step += light_step;
 									}
 
-									dist_color += clamp(light_color, 0.0, 1.0);
+									float trans = 1.0 - dist_opacity;
+									dist_color = dist_color + trans*clamp(light_color, 0.0, 1.0);
+									dist_opacity = dist_opacity + trans*0.05;
 								}
 							}	
-
-
-							dist_opacity += 0.0005;
 
 							curr_step += step;
 						}
@@ -333,7 +339,7 @@ float get_ray0(const int channel, const float eta)
 				else
 					rays[i].base_color = rayPayload.color.b;
 				
-				rays[i].base_color = mix(rays[i].base_color, dist_color, dist_opacity);
+				rays[i].base_color = mix(rays[i].base_color, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 
 				//rays[i].base_color += dist_color; // In case of fog
 
@@ -530,8 +536,7 @@ float get_ray0(const int channel, const float eta)
 
 void main() 
 {
-	const ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
-	const ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
+
 
 	// Calculate chromatic aberration
 
