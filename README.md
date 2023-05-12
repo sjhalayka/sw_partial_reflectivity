@@ -1,5 +1,7 @@
 Based off of Sascha Willems' raytracingreflections demo code.
 
+![image](https://github.com/sjhalayka/sw_partial_reflectivity/assets/16404554/8c446e42-b6d2-4c09-86fa-54e3a0279d08)
+
 Supports:
 - Reflection and refraction (Fresnel)
 - Chromatic aberration
