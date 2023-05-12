@@ -267,6 +267,8 @@ float get_ray0(const int channel, const float eta)
 				else
 					hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
 
+
+
 				float dist_color = 0.0;
 				float dist_opacity = 0.0;
 
@@ -333,7 +335,11 @@ float get_ray0(const int channel, const float eta)
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 							dist_color += trans * lights_color;
-							dist_opacity += trans * 0.025 * lights_color;
+
+							//if(lights_color < 0.5)
+							dist_opacity += trans * 0.05 * lights_color;
+							//else
+							//dist_opacity += trans * 0.01 * lights_color;
 
 							curr_step += step;
 						}
