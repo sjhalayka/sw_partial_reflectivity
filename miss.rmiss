@@ -26,7 +26,7 @@ void main()
 	float t = 0.5 * (unitDir.y + 1.0);
 	rayPayload.color = (1.0-t) * gradientStart + t * gradientEnd;
 	rayPayload.pure_color = rayPayload.color;
-	rayPayload.distance = -1.0;
+	rayPayload.distance = -1;
 	rayPayload.normal = vec3(0.0f);
 	rayPayload.reflector = 0.0f;
 	rayPayload.opacity = 1.0;
