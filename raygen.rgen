@@ -336,9 +336,9 @@ float get_ray0(const int channel, const float eta)
 							dist_color += trans * lights_color;
 							
 							if(lights_color < 0.5)
-							dist_opacity += trans * 0.01 * lights_color;
+							dist_opacity += trans * 0.1 * lights_color;
 							else
-							dist_opacity += trans * 0.01 * lights_color;
+							dist_opacity += trans * 0.05 * lights_color;
 
 							curr_step += step;
 						}
