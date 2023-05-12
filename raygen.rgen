@@ -267,10 +267,6 @@ float get_ray0(const int channel, const float eta)
 				else
 					hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
 
-
-
-
-
 				float dist_color = 0.0;
 				float dist_opacity = 0.0;
 
@@ -285,7 +281,10 @@ float get_ray0(const int channel, const float eta)
 						const float target_step_length = 0.125;
 
 						const vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
-						const vec3 end = hitPos.xyz;
+						vec3 end = hitPos.xyz;
+
+						//if(end == rays[i].origin.xyz)
+						//	end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
 
 						const float num_steps = floor(distance(start, end) / target_step_length);
 						const vec3 step = (start - end) / num_steps;
@@ -300,11 +299,11 @@ float get_ray0(const int channel, const float eta)
 							{
 								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
-								float light_color = 1.0;
+								float light_color = 0.0;
 
 								if(shadow)
 								{
-									light_color = 0.0;
+									light_color = 1.0;
 								}
 								else
 								{
@@ -320,7 +319,7 @@ float get_ray0(const int channel, const float eta)
 										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 											break;
 
-										light_color -= get_sample(light_curr_step)*0.1;
+										light_color += get_sample(light_curr_step)*0.1;
 
 										light_curr_step += light_step;
 									}
@@ -333,8 +332,13 @@ float get_ray0(const int channel, const float eta)
 							lights_color /= float(max_lights);
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
-							dist_color = dist_color + trans * lights_color;
-							dist_opacity = dist_opacity + trans * 0.01 * lights_color;
+							
+							dist_color += trans * lights_color;
+							
+							if(lights_color < 0.5)
+							dist_opacity += trans * 0.01 * lights_color;
+							else
+							dist_opacity += trans * 0.01 * lights_color;
 
 							curr_step += step;
 						}
