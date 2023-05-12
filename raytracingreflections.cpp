@@ -31,12 +31,12 @@ public:
 		switch (keyCode)
 		{
 		case KEY_SPACE:
-			{
-				if (prepared)
-					screenshot(width*6, height*6, "v_rt_reflect.png");
+		{
+			if (prepared)
+				screenshot(width * 6, height * 6, "v_rt_reflect.png");
 
-				break;
-			}
+			break;
+		}
 		}
 	}
 
@@ -97,6 +97,23 @@ public:
 
 
 
+			//vks::tools::insertImageMemoryBarrier(
+			//	screenshotCmdBuffer,
+			//	screenshotStorageImage.image,
+			//	0,
+			//	VK_ACCESS_TRANSFER_WRITE_BIT,
+			//	VK_IMAGE_LAYOUT_UNDEFINED,
+			//	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+
+
+
+
+
+
 			VkBufferImageCopy copyRegion{};
 			copyRegion.bufferOffset = 0;
 			copyRegion.bufferRowLength = 0;
@@ -137,73 +154,73 @@ public:
 			}
 		}
 
-	//	if (1)//true == reverse_rows)
-	//	{
-	//		// Reverse row order
-	//		short unsigned int num_rows_to_swap = py;
-	//		vector<unsigned char> buffer(px * 4);
+		//	if (1)//true == reverse_rows)
+		//	{
+		//		// Reverse row order
+		//		short unsigned int num_rows_to_swap = py;
+		//		vector<unsigned char> buffer(px * 4);
 
-	//		if (0 != py % 2)
-	//			num_rows_to_swap--;
+		//		if (0 != py % 2)
+		//			num_rows_to_swap--;
 
-	//		num_rows_to_swap /= 2;
+		//		num_rows_to_swap /= 2;
 
-	//		for (short unsigned int i = 0; i < num_rows_to_swap; i++)
-	//		{
-	//			size_t y_first = i * px * 4;
-	//			size_t y_last = (py - 1 - i) * px * 4;
+		//		for (short unsigned int i = 0; i < num_rows_to_swap; i++)
+		//		{
+		//			size_t y_first = i * px * 4;
+		//			size_t y_last = (py - 1 - i) * px * 4;
 
-	//			memcpy(&buffer[0], &data[y_first], px * 4 * sizeof(unsigned char));
-	//			memcpy(&data[y_first], &data[y_last], px * 4 * sizeof(unsigned char));
-	//			memcpy(&data[y_last], &buffer[0], px * 4 * sizeof(unsigned char));
-	//		}
-	//	}
-
-
+		//			memcpy(&buffer[0], &data[y_first], px * 4 * sizeof(unsigned char));
+		//			memcpy(&data[y_first], &data[y_last], px * 4 * sizeof(unsigned char));
+		//			memcpy(&data[y_last], &buffer[0], px * 4 * sizeof(unsigned char));
+		//		}
+		//	}
 
 
 
-		// Set up Targa TGA image data.
-		//unsigned char  idlength = 0;
-		//unsigned char  colourmaptype = 0;
-		//unsigned char  datatypecode = 2;
-		//unsigned short int colourmaporigin = 0;
-		//unsigned short int colourmaplength = 0;
-		//unsigned char  colourmapdepth = 0;
-		//unsigned short int x_origin = 0;
-		//unsigned short int y_origin = 0;
 
-		//unsigned short int px = size_x;
-		//unsigned short int py = size_y;
-		//unsigned char  bitsperpixel = 32;
-		//unsigned char  imagedescriptor = 0;
-		//vector<char> idstring;
 
-		
+			// Set up Targa TGA image data.
+			//unsigned char  idlength = 0;
+			//unsigned char  colourmaptype = 0;
+			//unsigned char  datatypecode = 2;
+			//unsigned short int colourmaporigin = 0;
+			//unsigned short int colourmaplength = 0;
+			//unsigned char  colourmapdepth = 0;
+			//unsigned short int x_origin = 0;
+			//unsigned short int y_origin = 0;
 
-	//	// Write Targa TGA file to disk.
-	//	ofstream out(filename, ios::binary);
+			//unsigned short int px = size_x;
+			//unsigned short int py = size_y;
+			//unsigned char  bitsperpixel = 32;
+			//unsigned char  imagedescriptor = 0;
+			//vector<char> idstring;
 
-	//	if (!out.is_open())
-	//	{
-	////		cout << "Failed to open TGA file for writing: " << filename << endl;
-	//		return;
-	//	}
 
-	//	out.write(reinterpret_cast<char*>(&idlength), 1);
-	//	out.write(reinterpret_cast<char*>(&colourmaptype), 1);
-	//	out.write(reinterpret_cast<char*>(&datatypecode), 1);
-	//	out.write(reinterpret_cast<char*>(&colourmaporigin), 2);
-	//	out.write(reinterpret_cast<char*>(&colourmaplength), 2);
-	//	out.write(reinterpret_cast<char*>(&colourmapdepth), 1);
-	//	out.write(reinterpret_cast<char*>(&x_origin), 2);
-	//	out.write(reinterpret_cast<char*>(&y_origin), 2);
-	//	out.write(reinterpret_cast<char*>(&px), 2);
-	//	out.write(reinterpret_cast<char*>(&py), 2);
-	//	out.write(reinterpret_cast<char*>(&bitsperpixel), 1);
-	//	out.write(reinterpret_cast<char*>(&imagedescriptor), 1);
-	//	out.write(reinterpret_cast<char*>(&data[0]), size_x * size_y * 4 * sizeof(unsigned char));
-	//	out.close();
+
+		//	// Write Targa TGA file to disk.
+		//	ofstream out(filename, ios::binary);
+
+		//	if (!out.is_open())
+		//	{
+		////		cout << "Failed to open TGA file for writing: " << filename << endl;
+		//		return;
+		//	}
+
+		//	out.write(reinterpret_cast<char*>(&idlength), 1);
+		//	out.write(reinterpret_cast<char*>(&colourmaptype), 1);
+		//	out.write(reinterpret_cast<char*>(&datatypecode), 1);
+		//	out.write(reinterpret_cast<char*>(&colourmaporigin), 2);
+		//	out.write(reinterpret_cast<char*>(&colourmaplength), 2);
+		//	out.write(reinterpret_cast<char*>(&colourmapdepth), 1);
+		//	out.write(reinterpret_cast<char*>(&x_origin), 2);
+		//	out.write(reinterpret_cast<char*>(&y_origin), 2);
+		//	out.write(reinterpret_cast<char*>(&px), 2);
+		//	out.write(reinterpret_cast<char*>(&py), 2);
+		//	out.write(reinterpret_cast<char*>(&bitsperpixel), 1);
+		//	out.write(reinterpret_cast<char*>(&imagedescriptor), 1);
+		//	out.write(reinterpret_cast<char*>(&data[0]), size_x * size_y * 4 * sizeof(unsigned char));
+		//	out.close();
 
 
 
@@ -222,7 +239,7 @@ public:
 		// Delete screenshot image
 		deleteScreenshotStorageImage();
 		screenshotStagingBuffer.destroy();
-	
+
 
 		//m.unlock();
 	}
@@ -277,6 +294,18 @@ public:
 			VK_IMAGE_LAYOUT_GENERAL,
 			{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
+		// Transition swapchain image from present to transfer source layout
+		//vks::tools::insertImageMemoryBarrier(
+		//	cmdBuffer,
+		//	screenshotStorageImage.image,
+		//	VK_ACCESS_MEMORY_READ_BIT,
+		//	VK_ACCESS_TRANSFER_READ_BIT,
+		//	VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+		//	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+		//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+		//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+		//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
 		vulkanDevice->flushCommandBuffer(cmdBuffer, queue);
 	}
 
@@ -308,9 +337,9 @@ public:
 				1.0f, 0.0f, 0.0f, 0.0f,
 				0.0f, 1.0f, 0.0f, 0.0f,
 				0.0f, 0.0f, 1.0f, 0.0f };
-	
+
 	clock_t start = std::clock();
-	
+
 	struct UniformData {
 
 		glm::mat4 viewInverse;
@@ -834,6 +863,34 @@ public:
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				subresourceRange);
 
+
+
+			//vks::tools::insertImageMemoryBarrier(
+			//	drawCmdBuffers[i],
+			//	swapChain.images[i],
+			//	0,
+			//	VK_ACCESS_TRANSFER_WRITE_BIT,
+			//	VK_IMAGE_LAYOUT_UNDEFINED,
+			//	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+			//// Transition swapchain image from present to transfer source layout
+			//vks::tools::insertImageMemoryBarrier(
+			//	drawCmdBuffers[i],
+			//	storageImage.image,
+			//	VK_ACCESS_MEMORY_READ_BIT,
+			//	VK_ACCESS_TRANSFER_READ_BIT,
+			//	VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+			//	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+
+
+
 			VkImageCopy copyRegion{};
 			copyRegion.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 			copyRegion.srcOffset = { 0, 0, 0 };
@@ -858,6 +915,30 @@ public:
 				VK_IMAGE_LAYOUT_GENERAL,
 				subresourceRange);
 
+			//vks::tools::insertImageMemoryBarrier(
+			//	drawCmdBuffers[i],
+			//	swapChain.images[i],
+			//	0,
+			//	VK_ACCESS_TRANSFER_WRITE_BIT,
+			//	VK_IMAGE_LAYOUT_UNDEFINED,
+			//	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+			//// Transition swapchain image from present to transfer source layout
+			//vks::tools::insertImageMemoryBarrier(
+			//	drawCmdBuffers[i],
+			//	storageImage.image,
+			//	VK_ACCESS_MEMORY_READ_BIT,
+			//	VK_ACCESS_TRANSFER_READ_BIT,
+			//	VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+			//	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+			//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+
 			drawUI(drawCmdBuffers[i], frameBuffers[i]);
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
@@ -878,16 +959,16 @@ public:
 
 
 		const float speed = 0.125f;
-		
-///		timer = 0;
+
+		///		timer = 0;
 
 		uniformData.light_positions[0] = glm::vec4(
-			cos(glm::radians(timer * 360.0f)) * 40.0f * speed, 
-			-50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f * speed, 
-			25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f * speed, 
+			cos(glm::radians(timer * 360.0f)) * 40.0f * speed,
+			-50.0f + sin(glm::radians(timer * 360.0f)) * 20.0f * speed,
+			25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f * speed,
 			0.0f);
 
-//		uniformData.light_positions[0] = glm::vec4(0, -50, 0, 0);
+		//		uniformData.light_positions[0] = glm::vec4(0, -50, 0, 0);
 
 		uniformData.light_positions[1] = uniformData.light_positions[0];
 		uniformData.light_positions[1].x = -uniformData.light_positions[1].x;

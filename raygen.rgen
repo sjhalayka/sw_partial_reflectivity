@@ -259,8 +259,13 @@ float get_ray0(const int channel, const float eta)
 
 				// Finally, trace the ray
 				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
-				vec4 hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
 				
+				vec4 hitPos = vec4(0.0);
+
+				if(rayPayload.distance == -1)
+					hitPos = rays[i].origin;
+				else
+					hitPos = rays[i].origin + rays[i].direction * rayPayload.distance;
 
 
 
@@ -280,10 +285,7 @@ float get_ray0(const int channel, const float eta)
 						const float target_step_length = 0.125;
 
 						const vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
-						vec3 end = hitPos.xyz;
-
-						//if(rayPayload.distance == -1)
-						//	end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
+						const vec3 end = hitPos.xyz;
 
 						const float num_steps = floor(distance(start, end) / target_step_length);
 						const vec3 step = (start - end) / num_steps;
@@ -327,9 +329,11 @@ float get_ray0(const int channel, const float eta)
 								lights_color += clamp(light_color, 0.0, 1.0);
 							}
 							
+							lights_color = clamp(lights_color, 0.0, 1.0);
+
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
-							dist_color = dist_color + trans * lights_color;
-							dist_opacity = dist_opacity + trans* 0.01 * pow(lights_color, 1.0);
+							dist_color = dist_color + trans * (lights_color);
+							dist_opacity = dist_opacity + trans *0.01 * (lights_color);
 
 							curr_step += step;
 						}
