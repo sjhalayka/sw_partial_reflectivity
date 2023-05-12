@@ -312,7 +312,7 @@ float get_ray0(const int channel, const float eta)
 
 									for(float l = 0.0; l < light_num_steps; l += 1.0)
 									{
-										if(light_color > 1.0 || false == in_aabb(light_curr_step, aabb_min, aabb_max))
+										if(light_color >= 1.0 || false == in_aabb(light_curr_step, aabb_min, aabb_max))
 											break;
 
 										light_color += get_sample(light_curr_step)*0.1;
