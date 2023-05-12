@@ -23,8 +23,6 @@ public:
 	AccelerationStructure bottomLevelAS{};
 	AccelerationStructure topLevelAS{};
 
-	bool do_screenshot = false;
-	//mutex m;
 
 	virtual void keyPressed(uint32_t keyCode)
 	{
@@ -33,7 +31,7 @@ public:
 		case KEY_SPACE:
 			{
 				if (prepared)
-					do_screenshot = true;
+					screenshot(width * 4, height * 4, "v_rt_reflect.png");
 				
 				break;
 			}
@@ -959,14 +957,10 @@ public:
 
 		draw();
 
-		if (do_screenshot)
-		{
-			screenshot(width * 4, height * 4, "v_rt_reflect.png");
-			do_screenshot = false;
-		}
 
 		if (!paused || camera.updated)
 			updateUniformBuffers();
+
 	}
 };
 

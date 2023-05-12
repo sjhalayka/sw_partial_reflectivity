@@ -265,6 +265,7 @@ float get_ray0(const int channel, const float eta)
 
 
 
+
 				float dist_color = 0.0;
 				float dist_opacity = 0.0;
 
@@ -279,13 +280,10 @@ float get_ray0(const int channel, const float eta)
 						const float target_step_length = 0.125;
 
 						const vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
-						
-						
-						vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
+						vec3 end = hitPos.xyz;
 
-						if(distance(hitPos.xyz, rays[i].origin.xyz) < distance(end, rays[i].origin.xyz))
-							end = hitPos.xyz;
-
+						//if(rayPayload.distance == -1)
+						//	end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
 
 						const float num_steps = floor(distance(start, end) / target_step_length);
 						const vec3 step = (start - end) / num_steps;
@@ -317,7 +315,7 @@ float get_ray0(const int channel, const float eta)
 
 									for(float l = 0.0; l < light_num_steps; l += 1.0)
 									{
-										if(light_color <= 0 || false == in_aabb(light_curr_step, aabb_min, aabb_max))
+										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 											break;
 
 										light_color -= get_sample(light_curr_step)*0.1;
@@ -331,7 +329,7 @@ float get_ray0(const int channel, const float eta)
 							
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 							dist_color = dist_color + trans * lights_color;
-							dist_opacity = dist_opacity + trans* 0.01 * lights_color;
+							dist_opacity = dist_opacity + trans* 0.01 * pow(lights_color, 2.0);
 
 							curr_step += step;
 						}
