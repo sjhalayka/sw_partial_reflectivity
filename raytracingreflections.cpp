@@ -23,6 +23,8 @@ public:
 	AccelerationStructure bottomLevelAS{};
 	AccelerationStructure topLevelAS{};
 
+	bool do_screenshot = false;
+	//mutex m;
 
 	virtual void keyPressed(uint32_t keyCode)
 	{
@@ -31,8 +33,8 @@ public:
 		case KEY_SPACE:
 			{
 				if (prepared)
-					screenshot(width * 4, height * 4, "v_rt_reflect.png");
-				
+					screenshot(width*6, height*6, "v_rt_reflect.png");
+
 				break;
 			}
 		}
@@ -84,12 +86,16 @@ public:
 				size_y,
 				1);
 
+
+
 			vks::tools::setImageLayout(
 				screenshotCmdBuffer,
 				screenshotStorageImage.image,
 				VK_IMAGE_LAYOUT_GENERAL,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				subresourceRange);
+
+
 
 			VkBufferImageCopy copyRegion{};
 			copyRegion.bufferOffset = 0;
