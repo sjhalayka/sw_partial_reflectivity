@@ -284,7 +284,7 @@ float get_ray0(const int channel, const float eta)
 						if(rayPayload.distance != -1)
 						{
 							start = hitPos.xyz;
-							end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
+							end = rays[i].origin.xyz + rays[i].direction.xyz*t0;
 						}
 
 						const float num_steps = floor(distance(start, end) / target_step_length);
