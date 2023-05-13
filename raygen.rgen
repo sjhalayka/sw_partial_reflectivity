@@ -294,14 +294,12 @@ float get_ray0(const int channel, const float eta)
 								continue;
 
 							float lights_color = 0.0;
-							float lights_opacity = 0.0;
 
 							for(int k = 0; k < max_lights; k++)
 							{
 								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
 								float light_color = 0.0;
-								float light_opacity = 0.0;
 
 								if(shadow)
 								{
@@ -327,8 +325,6 @@ float get_ray0(const int channel, const float eta)
 											light_color += get_sample(light_curr_step).g*0.1;
 										else
 											light_color += get_sample(light_curr_step).b*0.1;
-
-										light_opacity += get_sample(light_curr_step).a*0.1;
 									}
 								}
 
