@@ -40,8 +40,6 @@ const float blue_eta = 0.95;
  ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
 
 
- const vec3 fog_color = vec3(1, 1, 1);
-
 
 const int max_lights = 2;
 
@@ -344,7 +342,6 @@ float get_ray0(const int channel, const float eta)
 								lights_color += clamp(light_color, 0.0, 1.0);
 							}
 						
-
 							lights_color /= float(max_lights);
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
@@ -365,11 +362,11 @@ float get_ray0(const int channel, const float eta)
 				rays[i].normal = rayPayload.normal;
 
 				if(channel == red_channel)
-					rays[i].base_color = mix(rayPayload.color.r, fog_color.r*clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
+					rays[i].base_color = mix(rayPayload.color.r, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 				else if(channel == green_channel)
-					rays[i].base_color = mix(rayPayload.color.g, fog_color.g*clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
+					rays[i].base_color = mix(rayPayload.color.g, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 				else
-					rays[i].base_color = mix(rayPayload.color.b, fog_color.b*clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
+					rays[i].base_color = mix(rayPayload.color.b, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
