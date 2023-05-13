@@ -40,7 +40,7 @@ const float blue_eta = 0.95;
  ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
 
 
- const vec3 fog_color = vec3(1, 0.5, 0.5);
+ const vec3 fog_color = vec3(1, 1, 1);
 
 
 const int max_lights = 2;
@@ -128,10 +128,10 @@ vec3 aabb_max = vec3(2.5, 2.5, 2.5);
 
 
 
-float get_sample(vec3 pos)
+vec4 get_sample(vec3 pos)
 {
 // Get 3D texture coords from pos and aabb_min and aabb_max
-	return 1.0;
+	return vec4(1.0);
 }
 
 bool in_aabb(vec3 pos, vec3 aabb_min, vec3 aabb_max)
@@ -296,12 +296,14 @@ float get_ray0(const int channel, const float eta)
 								continue;
 
 							float lights_color = 0.0;
+							float lights_opacity = 0.0;
 
 							for(int k = 0; k < max_lights; k++)
 							{
 								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
 								float light_color = 0.0;
+								float light_opacity = 0.0;
 
 								if(shadow)
 								{
@@ -321,9 +323,23 @@ float get_ray0(const int channel, const float eta)
 										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 											break;
 
-										light_color += get_sample(light_curr_step)*0.1;
+										if(channel == red_channel)
+											light_color += get_sample(light_curr_step).r*0.1;
+										else if(channel == green_channel)
+											light_color += get_sample(light_curr_step).g*0.1;
+										else
+											light_color += get_sample(light_curr_step).b*0.1;
+
+										light_opacity += get_sample(light_curr_step).a*0.1;
 									}
 								}
+
+								if(channel == red_channel)
+									light_color *= ubo.light_colors[k].r;
+								else if(channel == green_channel)
+									light_color *= ubo.light_colors[k].g;
+								else
+									light_color *= ubo.light_colors[k].b;
 
 								lights_color += clamp(light_color, 0.0, 1.0);
 							}
