@@ -278,8 +278,8 @@ float get_ray0(const int channel, const float eta)
 					{
 						const float target_step_length = 0.125;
 
-						vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
-						vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
+						vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t1;
+						vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t0;
 
 						if(rayPayload.distance != -1)
 						{
