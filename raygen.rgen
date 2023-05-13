@@ -284,7 +284,7 @@ float get_ray0(const int channel, const float eta)
 						if(rayPayload.distance != -1)
 						{
 							start = hitPos.xyz;
-							end = rays[i].origin.xyz + rays[i].direction.xyz*t0;
+							end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
 						}
 
 						const float num_steps = floor(distance(start, end) / target_step_length);
@@ -294,6 +294,9 @@ float get_ray0(const int channel, const float eta)
 
 						for(float j = 0; j < num_steps; j += 1.0, curr_step += step)
 						{
+							if(false == in_aabb(curr_step, aabb_min, aabb_max))
+								continue;
+
 							float lights_color = 0.0;
 
 							for(int k = 0; k < max_lights; k++)
@@ -355,11 +358,11 @@ float get_ray0(const int channel, const float eta)
 					rays[i].base_color = rayPayload.color.b;
 				
 				if(channel == red_channel)
-					rays[i].base_color = fog_color.r * mix(rays[i].base_color, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
+					rays[i].base_color = mix(rays[i].base_color, fog_color.r*clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 				else if(channel == green_channel)
-					rays[i].base_color = fog_color.g * mix(rays[i].base_color, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
+					rays[i].base_color = mix(rays[i].base_color, fog_color.g*clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 				else
-					rays[i].base_color = fog_color.b * mix(rays[i].base_color, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
+					rays[i].base_color = mix(rays[i].base_color, fog_color.b*clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 
 				rays[i].reflection_constant = rayPayload.reflector;
 				rays[i].refraction_constant = rayPayload.opacity;
