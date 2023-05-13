@@ -276,123 +276,63 @@ float get_ray0(const int channel, const float eta)
 
 					if(BBoxIntersect(aabb_min, aabb_max, rays[i].origin.xyz, rays[i].direction.xyz, t0, t1))
 					{
+						const float target_step_length = 0.125;
+
+						vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
+						vec3 end = hitPos.xyz;
+
 						if(rayPayload.distance != -1)
 						{
-							const float target_step_length = 0.125;
-
-							const vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
-							vec3 end = hitPos.xyz;
-
-							const float num_steps = floor(distance(start, end) / target_step_length);
-							const vec3 step = (start - end) / num_steps;
-
-							vec3 curr_step = start;
-
-							for(float j = 0; j < num_steps; j += 1.0)
-							{
-								float lights_color = 0.0;
-
-								for(int k = 0; k < max_lights; k++)
-								{
-									bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
-
-									float light_color = 1.0;
-
-									if(shadow)
-									{
-										light_color = 0.0;
-									}
-									else
-									{
-										const vec3 light_steps_start = curr_step;
-										const vec3 light_steps_end = ubo.light_positions[k].xyz;
-										const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
-										const vec3 light_step = (light_steps_start - light_steps_end)/float(light_num_steps);
-									
-										vec3 light_curr_step = light_steps_start;
-
-										for(float l = 0.0; l < light_num_steps; l += 1.0)
-										{
-											if(light_color <= 0.0 || false == in_aabb(light_curr_step, aabb_min, aabb_max))
-												break;
-
-											light_color -= get_sample(light_curr_step)*0.1;
-
-											light_curr_step += light_step;
-										}
-									}
-
-									lights_color += clamp(light_color, 0.0, 1.0);
-								}
-						
-
-								lights_color /= float(max_lights);
-
-								float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
-								dist_color += trans * lights_color;
-								dist_opacity += trans * 0.075 * lights_color;
-
-								curr_step += step;
-							}
+							start = hitPos.xyz;
+							end = rays[i].origin.xyz + rays[i].direction.xyz*t0;
 						}
-						else
+
+						const float num_steps = floor(distance(start, end) / target_step_length);
+						const vec3 step = (start - end) / num_steps;
+
+						vec3 curr_step = start;
+
+						for(float j = 0; j < num_steps; j += 1.0, curr_step += step)
 						{
-							const float target_step_length = 0.125;
+							float lights_color = 0.0;
 
-							const vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
-							vec3 end = hitPos.xyz;//rays[i].origin.xyz + rays[i].direction.xyz*t1;
-
-							const float num_steps = floor(distance(start, end) / target_step_length);
-							const vec3 step = (start - end) / num_steps;
-
-							vec3 curr_step = start;
-
-							for(float j = 0; j < num_steps; j += 1.0)
+							for(int k = 0; k < max_lights; k++)
 							{
-								float lights_color = 0.0;
+								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
-								for(int k = 0; k < max_lights; k++)
+								float light_color = 0.0;
+
+								if(shadow)
 								{
-									bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
-
-									float light_color = 0.0;
-
-									if(shadow)
-									{
-										light_color = 0.0;
-									}
-									else
-									{
-										const vec3 light_steps_start = curr_step;
-										const vec3 light_steps_end = ubo.light_positions[k].xyz;
-										const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
-										const vec3 light_step = (light_steps_start - light_steps_end)/float(light_num_steps);
-									
-										vec3 light_curr_step = light_steps_start;
-
-										for(float l = 0.0; l < light_num_steps; l += 1.0)
-										{
-											if(light_color >= 1.0 || false == in_aabb(light_curr_step, aabb_min, aabb_max))
-												break;
-
-											light_color += get_sample(light_curr_step)*0.1;
-
-											light_curr_step += light_step;
-										}
-									}
-
-									lights_color += clamp(light_color, 0.0, 1.0);
+									light_color = 0.0;
 								}
+								else
+								{
+									const vec3 light_steps_start = curr_step;
+									const vec3 light_steps_end = ubo.light_positions[k].xyz;
+									const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
+									const vec3 light_step = (light_steps_start - light_steps_end)/float(light_num_steps);
+									
+									vec3 light_curr_step = light_steps_start;
+
+									for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step)
+									{
+										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
+											break;
+
+										light_color += get_sample(light_curr_step)*0.1;
+									}
+								}
+
+								lights_color += clamp(light_color, 0.0, 1.0);
+							}
 						
 
-								lights_color /= float(max_lights);
+							lights_color /= float(max_lights);
 
-								float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
-								dist_color += trans * lights_color;
-								dist_opacity += trans * 0.075 * lights_color;
-
-								curr_step += step;
-							}
+							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
+							dist_color += trans * lights_color;
+							dist_opacity += trans * 0.075 * lights_color;
 						}
 					}
 				}
