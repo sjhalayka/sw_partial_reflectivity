@@ -968,7 +968,7 @@ public:
 			25.0f + sin(glm::radians(timer * 360.0f)) * 5.0f * speed,
 			0.0f);
 
-		//		uniformData.light_positions[0] = glm::vec4(0, -50, 0, 0);
+
 
 		uniformData.light_positions[1] = uniformData.light_positions[0];
 		uniformData.light_positions[1].x = -uniformData.light_positions[1].x;
