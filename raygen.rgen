@@ -299,7 +299,7 @@ float get_ray0(const int channel, const float eta)
 							{
 								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
-								float light_color = 0.0;
+								float light_color = 1.0;
 
 								if(shadow)
 								{
@@ -322,8 +322,6 @@ float get_ray0(const int channel, const float eta)
 										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 											break;
 									}
-
-									light_color = 1.0;
 
 									light_curr_step = light_steps_start;
 
