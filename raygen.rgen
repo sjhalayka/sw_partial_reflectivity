@@ -267,7 +267,7 @@ float get_ray0(const int channel, const float eta)
 				float dist_color = 0.0;
 				float dist_opacity = 0.0;
 
-				// Do some white fog
+				// Do some fog
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
 				{
 					float t0 = 0.0;
