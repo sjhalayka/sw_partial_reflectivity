@@ -310,22 +310,31 @@ float get_ray0(const int channel, const float eta)
 									const vec3 light_steps_start = curr_step;
 									const vec3 light_steps_end = ubo.light_positions[k].xyz;
 									const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
-									const vec3 light_step = (light_steps_end - light_steps_start)/float(light_num_steps);
+									const vec3 light_step = (light_steps_start - light_steps_end)/float(light_num_steps);
 									
 									vec3 light_curr_step = light_steps_start;
 
-									for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step)
+									int num_actual_steps = 0;
+
+									for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step, num_actual_steps)
 									{
 										// If stepped outside of the AABB then abort early
 										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 											break;
+									}
 
+									light_color = 1.0;
+
+									light_curr_step = light_steps_start;
+
+									for(int m = 0; m < num_actual_steps; m++, light_curr_step += light_step)
+									{
 										if(channel == red_channel)
-											light_color += get_sample(light_curr_step).r*0.01;
+											light_color -= get_sample(light_curr_step).r*0.01;
 										else if(channel == green_channel)
-											light_color += get_sample(light_curr_step).g*0.01;
+											light_color -= get_sample(light_curr_step).g*0.01;
 										else
-											light_color += get_sample(light_curr_step).b*0.01;
+											light_color -= get_sample(light_curr_step).b*0.01;
 									}
 								}
 
