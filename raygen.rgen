@@ -267,7 +267,7 @@ float get_ray0(const int channel, const float eta)
 				float dist_color = 0.0;
 				float dist_opacity = 0.0;
 
-				// Do some fog
+				// Do some fog in an AABB
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
 				{
 					float t0 = 0.0;
@@ -316,6 +316,7 @@ float get_ray0(const int channel, const float eta)
 
 									for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step)
 									{
+										// If stepped outside of the AABB then abort early
 										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 											break;
 
