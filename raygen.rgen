@@ -310,7 +310,7 @@ float get_ray0(const int channel, const float eta)
 									const vec3 light_steps_start = curr_step;
 									const vec3 light_steps_end = ubo.light_positions[k].xyz;
 									const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
-									const vec3 light_step = (light_steps_start - light_steps_end)/float(light_num_steps);
+									const vec3 light_step = (light_steps_end - light_steps_start)/float(light_num_steps);
 									
 									vec3 light_curr_step = light_steps_start;
 
