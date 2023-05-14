@@ -281,7 +281,7 @@ float get_ray0(const int channel, const float eta)
 						vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
 
 						if(rayPayload.distance != -1)
-							start = hitPos.xyz;
+							end = hitPos.xyz;
 		
 						const float num_steps = floor(distance(start, end) / target_step_length);
 						const vec3 step = (end - start) / num_steps;
