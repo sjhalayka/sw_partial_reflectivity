@@ -1,6 +1,6 @@
 Based off of Sascha Willems' raytracingreflections demo code.
 
-![image](https://github.com/sjhalayka/sw_partial_reflectivity/assets/16404554/e4e9c482-764f-4cab-8b72-313c8517bd56)
+![image](https://github.com/sjhalayka/sw_partial_reflectivity/assets/16404554/c9d09c83-c09e-4321-bf51-10bf1c80bc11)
 
 Supports:
 - Reflection and refraction (Fresnel)
