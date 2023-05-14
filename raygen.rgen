@@ -328,6 +328,9 @@ float get_ray0(const int channel, const float eta)
 									}
 								}
 
+								light_color = clamp(light_color, 0.0, 1.0);
+
+								// Apply lighting
 								if(channel == red_channel)
 									light_color *= ubo.light_colors[k].r;
 								else if(channel == green_channel)
@@ -335,10 +338,8 @@ float get_ray0(const int channel, const float eta)
 								else
 									light_color *= ubo.light_colors[k].b;
 
-								lights_color += clamp(light_color, 0.0, 1.0);
+								lights_color += light_color;
 							}
-						
-							lights_color /= float(max_lights);
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 							dist_color += trans * lights_color;
