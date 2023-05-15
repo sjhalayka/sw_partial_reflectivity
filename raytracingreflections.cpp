@@ -26,6 +26,15 @@ public:
 	bool do_screenshot = false;
 	//mutex m;
 
+	//we have a fence object created from somewhere
+	VkFence myFence;
+
+
+
+
+
+
+
 	virtual void keyPressed(uint32_t keyCode)
 	{
 		switch (keyCode)
@@ -131,7 +140,12 @@ public:
 
 			vkCmdCopyImageToBuffer(screenshotCmdBuffer, screenshotStorageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, screenshotStagingBuffer.buffer, 1, &copyRegion);
 
+			vkQueueWaitIdle(queue);
+
+
 			vulkanDevice->flushCommandBuffer(screenshotCmdBuffer, queue);
+
+
 		}
 
 		// Copy pixel data
@@ -305,6 +319,9 @@ public:
 		//	VK_PIPELINE_STAGE_TRANSFER_BIT,
 		//	VK_PIPELINE_STAGE_TRANSFER_BIT,
 		//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+
+
 
 		vulkanDevice->flushCommandBuffer(cmdBuffer, queue);
 	}
@@ -483,6 +500,9 @@ public:
 			1,
 			&accelerationBuildGeometryInfo,
 			accelerationBuildStructureRangeInfos.data());
+
+
+
 		vulkanDevice->flushCommandBuffer(commandBuffer, queue);
 
 		deleteScratchBuffer(scratchBuffer);
@@ -1026,6 +1046,11 @@ public:
 		VulkanExampleBase::prepareFrame();
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
+
+
+
+
+
 		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
 		VulkanExampleBase::submitFrame();
 	}

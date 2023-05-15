@@ -39,11 +39,12 @@ const float blue_eta = 0.95;
  ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
  ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
 
+uint prng_state = res.x * pixel_pos.y + pixel_pos.x;
 
 
 const int max_lights = 2;
 
-uint prng_state = 0;
+//uint prng_state = 0;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
 layout(binding = 1, set = 0, rgba8) uniform image2D color_image;
@@ -129,7 +130,10 @@ vec3 aabb_max = vec3(2.5, 2.5, 2.5);
 vec4 get_sample(vec3 pos)
 {
 // Get 3D texture coords from pos and aabb_min and aabb_max
-	return vec4(1.0);
+
+	vec3 rdir = vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state));
+
+	return vec4(rdir, 1.0);
 }
 
 bool in_aabb(vec3 pos, vec3 aabb_min, vec3 aabb_max)
@@ -275,7 +279,7 @@ float get_ray0(const int channel, const float eta)
 
 					if(BBoxIntersect(aabb_min, aabb_max, rays[i].origin.xyz, rays[i].direction.xyz, t0, t1))
 					{
-						const float target_step_length = 0.05;
+						const float target_step_length = 0.1;
 
 						vec3 start = rays[i].origin.xyz + rays[i].direction.xyz*t0;
 						vec3 end = rays[i].origin.xyz + rays[i].direction.xyz*t1;
@@ -294,19 +298,25 @@ float get_ray0(const int channel, const float eta)
 								continue;
 
 							float lights_color = 0.0;
+							float lights_opacity = 1.0;
 
 							for(int k = 0; k < max_lights; k++)
 							{
 								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
-								float light_color = 1.0;
+								float light_color = 0.0;
+								float light_opacity = 0.0;
 
 								if(shadow)
 								{
 									light_color = 0.0;
+									light_opacity = 1.0;
 								}
 								else
 								{
+									light_color = 1.0;
+									light_opacity = 0.0;
+
 									const vec3 light_steps_start = curr_step;
 									const vec3 light_steps_end = ubo.light_positions[k].xyz;
 									const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
@@ -333,10 +343,13 @@ float get_ray0(const int channel, const float eta)
 											light_color -= get_sample(light_curr_step).g*0.01;
 										else
 											light_color -= get_sample(light_curr_step).b*0.01;
+
+										light_opacity += get_sample(light_curr_step).a*0.01;
 									}
 								}
 
 								light_color = clamp(light_color, 0.0, 1.0);
+								light_opacity = clamp(light_opacity, 0.0, 1.0);
 
 								// Apply lighting
 								if(channel == red_channel)
@@ -347,11 +360,15 @@ float get_ray0(const int channel, const float eta)
 									light_color *= ubo.light_colors[k].b;
 
 								lights_color += light_color;
+								lights_opacity += light_opacity;
 							}
+
+							lights_color /= max_lights;
+							lights_opacity /= max_lights;
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 							dist_color += trans * lights_color;
-							dist_opacity += trans * 0.01 * lights_color;
+							dist_opacity += trans * 0.05 * lights_color;
 						}
 					}
 				}
