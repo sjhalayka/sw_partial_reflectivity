@@ -41,8 +41,7 @@ public:
 		{
 		case KEY_SPACE:
 		{
-			if (prepared)
-				screenshot(width * 6, height * 6, "v_rt_reflect.png");
+			do_screenshot = true;
 
 			break;
 		}
@@ -140,7 +139,7 @@ public:
 
 			vkCmdCopyImageToBuffer(screenshotCmdBuffer, screenshotStorageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, screenshotStagingBuffer.buffer, 1, &copyRegion);
 
-			vkQueueWaitIdle(queue);
+
 
 
 			vulkanDevice->flushCommandBuffer(screenshotCmdBuffer, queue);
@@ -319,7 +318,6 @@ public:
 		//	VK_PIPELINE_STAGE_TRANSFER_BIT,
 		//	VK_PIPELINE_STAGE_TRANSFER_BIT,
 		//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
-
 
 
 
@@ -997,7 +995,7 @@ public:
 		uniformData.light_positions[1].z = -uniformData.light_positions[1].z;
 
 		uniformData.light_colors[0] = glm::vec4(1, 0, 0, 1);
-		uniformData.light_colors[1] = glm::vec4(0, 0, 1, 1);
+		uniformData.light_colors[1] = glm::vec4(1, 1, 1, 1);
 
 		uniformData.camera_pos = camera.position;
 
@@ -1053,6 +1051,10 @@ public:
 
 		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
 		VulkanExampleBase::submitFrame();
+
+
+
+
 	}
 
 
@@ -1070,6 +1072,12 @@ public:
 		//createTopLevelAccelerationStructure();
 
 		draw();
+
+		if(do_screenshot)
+		{
+			screenshot(width * 6, height * 6, "v_rt_reflect.png");
+			do_screenshot = false;
+		}
 
 
 		if (!paused || camera.updated)

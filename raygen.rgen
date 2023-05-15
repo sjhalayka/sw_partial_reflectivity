@@ -304,19 +304,14 @@ float get_ray0(const int channel, const float eta)
 							{
 								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
-								float light_color = 0.0;
-								float light_opacity = 0.0;
+								float light_color = 1.0;
 
 								if(shadow)
 								{
 									light_color = 0.0;
-									light_opacity = 1.0;
 								}
 								else
 								{
-									light_color = 1.0;
-									light_opacity = 0.0;
-
 									const vec3 light_steps_start = curr_step;
 									const vec3 light_steps_end = ubo.light_positions[k].xyz;
 									const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
@@ -324,32 +319,22 @@ float get_ray0(const int channel, const float eta)
 									
 									vec3 light_curr_step = light_steps_start;
 
-									int num_actual_steps = 0;
-
-									for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step, num_actual_steps)
+									for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step)
 									{
 										// If stepped outside of the AABB then abort early
 										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 											break;
-									}
 
-									light_curr_step = light_steps_start;
-
-									for(int m = 0; m < num_actual_steps; m++, light_curr_step += light_step)
-									{
 										if(channel == red_channel)
 											light_color -= get_sample(light_curr_step).r*0.01;
 										else if(channel == green_channel)
 											light_color -= get_sample(light_curr_step).g*0.01;
 										else
 											light_color -= get_sample(light_curr_step).b*0.01;
-
-										light_opacity += get_sample(light_curr_step).a*0.01;
 									}
 								}
 
 								light_color = clamp(light_color, 0.0, 1.0);
-								light_opacity = clamp(light_opacity, 0.0, 1.0);
 
 								// Apply lighting
 								if(channel == red_channel)
@@ -360,7 +345,6 @@ float get_ray0(const int channel, const float eta)
 									light_color *= ubo.light_colors[k].b;
 
 								lights_color += light_color;
-								lights_opacity += light_opacity;
 							}
 
 							lights_color /= max_lights;
