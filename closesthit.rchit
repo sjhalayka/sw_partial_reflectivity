@@ -17,6 +17,8 @@ struct RayPayload {
 };
 
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;
+layout(location = 1) rayPayloadInEXT RayPayload rayPayload2;
+
 layout(location = 2) rayPayloadEXT bool shadowed;
 
 layout(binding = 0, set = 1) uniform sampler2D baseColorSampler;
@@ -122,8 +124,14 @@ float stepAndOutputRNGFloat(inout uint rngState)
 }
 
 
-bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
+
+
+
+
+float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 {
+	RayPayload r = rayPayload;
+
 	vec3 lightVector = normalize(light_pos);
 
 	// Pseudorandomize the direction of the light
@@ -141,11 +149,20 @@ bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 
 	lightVector = mix(rdir, lightVector, shadow_sharpness);
 
-	bool shadow = false;
+	float shadow = 0.0;
+
+	float total_inner_dist = 0.0;
+
+	vec3 first_origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
+	vec3 first_biased_origin = first_origin + normal * 0.01;
+
+	vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
+	vec3 biased_origin = origin + normal * 0.01;
+
 
 	if(dot(normal, lightVector) < 0.0)
 	{
-		shadow = true;
+		shadow = 0.0;
 	}
 	else
 	{
@@ -153,21 +170,50 @@ bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 		float tmin = 0.001;
 		float tmax = 1000.0;
 
-		vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
-		vec3 biased_origin = origin + normal * 0.01;
+		origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
+		biased_origin = origin + normal * 0.01;
 
-		shadowed = true; // Make sure to set this to the default before tracing the ray!
-		traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
+		int num_intersections = 0;
+
+		float first_opacity = 0.0;;
+
+		do
+		{
+			//shadowed = true; // Make sure to set this to the default before tracing the ray!
+			//traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
 		
-		if(shadowed)
-			shadow = true;
-		else
-			shadow = false;
+			vec3 prev_biased_origin = biased_origin;
+
+			uint rayFlags = gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT | gl_RayFlagsTerminateOnFirstHitEXT;
+			uint cullMask = 0xff;
+			float tmin = 0.001;
+			float tmax = 10000.0;
+
+			traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, biased_origin, tmin, lightVector, tmax, 0);
+
+			biased_origin = biased_origin + lightVector*0.01;
+
+			if(num_intersections % 2 != 0)
+			{
+				float inner_dist = distance(biased_origin, prev_biased_origin);
+				total_inner_dist += inner_dist * 0.5*(first_opacity + rayPayload.opacity);
+			}
+			else
+			{
+				first_opacity = rayPayload.opacity;
+			}
+
+			if(rayPayload.distance != -1)
+				num_intersections++;
+		}
+		while(rayPayload.distance != -1);
+
+		shadow = 1.0 - total_inner_dist / distance(biased_origin, first_biased_origin);
 	}
 
+	rayPayload = r;
 	return shadow;
 }
-
 
 
 void main()
@@ -206,6 +252,11 @@ void main()
 	rayPayload.color = vec3(0, 0, 0);
 
 	for (int i = 0; i < max_lights; i++)
-		if(false == get_shadow(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector))
-			rayPayload.color += phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
+	{
+		float s = get_shadow(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);
+
+		s = pow(s, 100.0);
+
+		rayPayload.color += s*phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
+	}
 }

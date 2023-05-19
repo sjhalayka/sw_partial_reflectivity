@@ -272,7 +272,7 @@ float get_ray0(const int channel, const float eta)
 				float dist_opacity = 0.0;
 
 				// Do some fog in an AABB
-				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
+				if(false)//rays[i].external_reflection_ray || rays[i].external_refraction_ray)
 				{
 					float t0 = 0.0;
 					float t1 = 0.0;
