@@ -978,7 +978,7 @@ public:
 
 		const float speed = 0.125f;
 
-			//timer = 0;
+		//timer = 0;
 
 		uniformData.light_positions[0] = glm::vec4(
 			cos(glm::radians(timer * 360.0f)) * 40.0f * speed,
@@ -1073,7 +1073,7 @@ public:
 
 		draw();
 
-		if(do_screenshot)
+		if (do_screenshot)
 		{
 			screenshot(width * 6, height * 6, "v_rt_reflect.png");
 			do_screenshot = false;
