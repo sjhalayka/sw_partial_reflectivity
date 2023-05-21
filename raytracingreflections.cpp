@@ -49,213 +49,556 @@ public:
 	}
 
 
-	void screenshot(const uint32_t size_x, const uint32_t size_y, const char* filename)
+	//void screenshot(const uint32_t size_x, const uint32_t size_y, const char* filename)
+	//{
+	//	//m.lock();
+
+	//	const VkDeviceSize size = size_x * size_y * 4; // number of bytes
+
+	//	// Create screenshot image
+	//	createScreenshotStorageImage(VK_FORMAT_R8G8B8A8_UNORM, { size_x, size_y, 1 });
+
+	//	VK_CHECK_RESULT(vulkanDevice->createBuffer(
+	//		VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+	//		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+	//		&screenshotStagingBuffer,
+	//		size
+	//	));
+
+	//	// Update descriptor
+	//	{
+	//		VkDescriptorImageInfo storageImageDescriptor{ VK_NULL_HANDLE, screenshotStorageImage.view, VK_IMAGE_LAYOUT_GENERAL };
+	//		VkWriteDescriptorSet resultImageWrite = vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &storageImageDescriptor);
+	//		vkUpdateDescriptorSets(device, 1, &resultImageWrite, 0, VK_NULL_HANDLE);
+	//	}
+
+	//	// Prepare & flush command buffer
+	//	{
+	//		VkCommandBuffer screenshotCmdBuffer = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+
+	//		VkImageSubresourceRange subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+	//		VkDescriptorSet sets[] = { descriptorSet, scene.materials[0].descriptorSet };
+
+	//		vkCmdBindPipeline(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipeline);
+	//		vkCmdBindDescriptorSets(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipelineLayout, 0, 2, sets, 0, 0);
+
+	//		VkStridedDeviceAddressRegionKHR emptySbtEntry = {};
+	//		vkCmdTraceRaysKHR(
+	//			screenshotCmdBuffer,
+	//			&shaderBindingTables.raygen.stridedDeviceAddressRegion,
+	//			&shaderBindingTables.miss.stridedDeviceAddressRegion,
+	//			&shaderBindingTables.hit.stridedDeviceAddressRegion,
+	//			&emptySbtEntry,
+	//			size_x,
+	//			size_y,
+	//			1);
+
+
+
+	//		vks::tools::setImageLayout(
+	//			screenshotCmdBuffer,
+	//			screenshotStorageImage.image,
+	//			VK_IMAGE_LAYOUT_GENERAL,
+	//			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+	//			subresourceRange);
+
+
+
+	//		//vks::tools::insertImageMemoryBarrier(
+	//		//	screenshotCmdBuffer,
+	//		//	screenshotStorageImage.image,
+	//		//	0,
+	//		//	VK_ACCESS_TRANSFER_WRITE_BIT,
+	//		//	VK_IMAGE_LAYOUT_UNDEFINED,
+	//		//	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+	//		//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+	//		//	VK_PIPELINE_STAGE_TRANSFER_BIT,
+	//		//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+
+
+
+
+
+
+	//		VkBufferImageCopy copyRegion{};
+	//		copyRegion.bufferOffset = 0;
+	//		copyRegion.bufferRowLength = 0;
+	//		copyRegion.bufferImageHeight = 0;
+
+	//		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//		copyRegion.imageSubresource.mipLevel = 0;
+	//		copyRegion.imageSubresource.baseArrayLayer = 0;
+	//		copyRegion.imageSubresource.layerCount = 1;
+
+	//		copyRegion.imageOffset = { 0, 0, 0 };
+	//		copyRegion.imageExtent.width = size_x;
+	//		copyRegion.imageExtent.height = size_y;
+	//		copyRegion.imageExtent.depth = 1;
+
+	//		vkCmdCopyImageToBuffer(screenshotCmdBuffer, screenshotStorageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, screenshotStagingBuffer.buffer, 1, &copyRegion);
+
+
+
+
+	//		vulkanDevice->flushCommandBuffer(screenshotCmdBuffer, queue);
+
+
+	//	}
+
+	//	// Copy pixel data
+	//	VK_CHECK_RESULT(screenshotStagingBuffer.map());
+
+	//	vector<uint8_t> data(size);
+	//	memcpy(&data[0], screenshotStagingBuffer.mapped, size);
+
+	//	for (uint32_t i = 0; i < size_x; i++)
+	//	{
+	//		for (uint32_t j = 0; j < size_y; j++)
+	//		{
+	//			size_t index = 4 * (j * size_x + i);
+
+	//			//unsigned char temp_char;
+	//			//temp_char = data[index + 0];
+	//			//data[index + 0] = data[index + 2];
+	//			//data[index + 2] = temp_char;
+	//			data[index + 3] = 255;
+	//		}
+	//	}
+
+	//	//	if (1)//true == reverse_rows)
+	//	//	{
+	//	//		// Reverse row order
+	//	//		short unsigned int num_rows_to_swap = py;
+	//	//		vector<unsigned char> buffer(px * 4);
+
+	//	//		if (0 != py % 2)
+	//	//			num_rows_to_swap--;
+
+	//	//		num_rows_to_swap /= 2;
+
+	//	//		for (short unsigned int i = 0; i < num_rows_to_swap; i++)
+	//	//		{
+	//	//			size_t y_first = i * px * 4;
+	//	//			size_t y_last = (py - 1 - i) * px * 4;
+
+	//	//			memcpy(&buffer[0], &data[y_first], px * 4 * sizeof(unsigned char));
+	//	//			memcpy(&data[y_first], &data[y_last], px * 4 * sizeof(unsigned char));
+	//	//			memcpy(&data[y_last], &buffer[0], px * 4 * sizeof(unsigned char));
+	//	//		}
+	//	//	}
+
+
+
+
+
+	//		// Set up Targa TGA image data.
+	//		//unsigned char  idlength = 0;
+	//		//unsigned char  colourmaptype = 0;
+	//		//unsigned char  datatypecode = 2;
+	//		//unsigned short int colourmaporigin = 0;
+	//		//unsigned short int colourmaplength = 0;
+	//		//unsigned char  colourmapdepth = 0;
+	//		//unsigned short int x_origin = 0;
+	//		//unsigned short int y_origin = 0;
+
+	//		//unsigned short int px = size_x;
+	//		//unsigned short int py = size_y;
+	//		//unsigned char  bitsperpixel = 32;
+	//		//unsigned char  imagedescriptor = 0;
+	//		//vector<char> idstring;
+
+
+
+	//	//	// Write Targa TGA file to disk.
+	//	//	ofstream out(filename, ios::binary);
+
+	//	//	if (!out.is_open())
+	//	//	{
+	//	////		cout << "Failed to open TGA file for writing: " << filename << endl;
+	//	//		return;
+	//	//	}
+
+	//	//	out.write(reinterpret_cast<char*>(&idlength), 1);
+	//	//	out.write(reinterpret_cast<char*>(&colourmaptype), 1);
+	//	//	out.write(reinterpret_cast<char*>(&datatypecode), 1);
+	//	//	out.write(reinterpret_cast<char*>(&colourmaporigin), 2);
+	//	//	out.write(reinterpret_cast<char*>(&colourmaplength), 2);
+	//	//	out.write(reinterpret_cast<char*>(&colourmapdepth), 1);
+	//	//	out.write(reinterpret_cast<char*>(&x_origin), 2);
+	//	//	out.write(reinterpret_cast<char*>(&y_origin), 2);
+	//	//	out.write(reinterpret_cast<char*>(&px), 2);
+	//	//	out.write(reinterpret_cast<char*>(&py), 2);
+	//	//	out.write(reinterpret_cast<char*>(&bitsperpixel), 1);
+	//	//	out.write(reinterpret_cast<char*>(&imagedescriptor), 1);
+	//	//	out.write(reinterpret_cast<char*>(&data[0]), size_x * size_y * 4 * sizeof(unsigned char));
+	//	//	out.close();
+
+
+
+	//	int result = stbi_write_png(filename, size_x, size_y, 4, &data[0], 0);
+
+
+
+
+	//	// Update descriptor back to normal
+	//	{
+	//		VkDescriptorImageInfo storageImageDescriptor{ VK_NULL_HANDLE, storageImage.view, VK_IMAGE_LAYOUT_GENERAL };
+	//		VkWriteDescriptorSet resultImageWrite = vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &storageImageDescriptor);
+	//		vkUpdateDescriptorSets(device, 1, &resultImageWrite, 0, VK_NULL_HANDLE);
+	//	}
+
+	//	// Delete screenshot image
+	//	deleteScreenshotStorageImage();
+	//	screenshotStagingBuffer.destroy();
+
+
+	//	//m.unlock();
+	//}
+
+VkDescriptorSet materialSet;
+
+	/*
+		Create the descriptor sets used for the ray tracing dispatch
+	*/
+
+
+
+
+
+
+void createDescriptorSets()
+{
+	std::vector<VkDescriptorPoolSize> poolSizes = {
+		{ VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2 },
+		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2 },
+	};
+	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = vks::initializers::descriptorPoolCreateInfo(poolSizes, 2);
+	VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &descriptorPool));
+
+	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = vks::initializers::descriptorSetAllocateInfo(descriptorPool, &descriptorSetLayout, 1);
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &descriptorSetAllocateInfo, &descriptorSet));
+
+	VkDescriptorSetAllocateInfo materialSetAllocateInfo = vks::initializers::descriptorSetAllocateInfo(descriptorPool, &materialSetLayout, 1);
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &materialSetAllocateInfo, &materialSet));
+
+	VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo = vks::initializers::writeDescriptorSetAccelerationStructureKHR();
+	descriptorAccelerationStructureInfo.accelerationStructureCount = 1;
+	descriptorAccelerationStructureInfo.pAccelerationStructures = &topLevelAS.handle;
+
+	VkWriteDescriptorSet accelerationStructureWrite{};
+	accelerationStructureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	// The specialized acceleration structure descriptor has to be chained
+	accelerationStructureWrite.pNext = &descriptorAccelerationStructureInfo;
+	accelerationStructureWrite.dstSet = descriptorSet;
+	accelerationStructureWrite.dstBinding = 0;
+	accelerationStructureWrite.descriptorCount = 1;
+	accelerationStructureWrite.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+
+	VkDescriptorImageInfo storageImageDescriptor{ VK_NULL_HANDLE, storageImage.view, VK_IMAGE_LAYOUT_GENERAL };
+	VkDescriptorBufferInfo vertexBufferDescriptor{ scene.vertices.buffer, 0, VK_WHOLE_SIZE };
+	VkDescriptorBufferInfo indexBufferDescriptor{ scene.indices.buffer, 0, VK_WHOLE_SIZE };
+
+	std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
+		// Binding 0: Top level acceleration structure
+		accelerationStructureWrite,
+		// Binding 1: Ray tracing result image
+		vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &storageImageDescriptor),
+		// Binding 2: Uniform data
+		vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2, &ubo.descriptor),
+		// Binding 3: Scene vertex buffer
+		vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3, &vertexBufferDescriptor),
+		// Binding 4: Scene index buffer
+		vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 4, &indexBufferDescriptor),
+
+		// Binding 0: Base color texture
+		vks::initializers::writeDescriptorSet(materialSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &scene.materials[0].baseColorTexture->descriptor),
+		// Binding 1: Normal texture
+		vks::initializers::writeDescriptorSet(materialSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &scene.materials[0].normalTexture->descriptor),
+	};
+	vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, VK_NULL_HANDLE);
+}
+
+/*
+	Create our ray tracing pipeline
+*/
+void createRayTracingPipeline()
+{
+	std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
+		// Binding 0: Acceleration structure
+		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 0),
+		// Binding 1: Storage image
+		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR, 1),
+		// Binding 2: Uniform buffer
+		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, 2),
+		// Binding 3: Vertex buffer 
+		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 3),
+		// Binding 4: Index buffer
+		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 4),
+	};
+
+	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI = vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCI, nullptr, &descriptorSetLayout));
+
+	std::vector<VkDescriptorSetLayoutBinding> materialSetLayoutBindings = {
+		// Binding 0: Base color texture
+		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 0),
+		// Binding 1: Normal texture
+		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 1),
+	};
+
+	VkDescriptorSetLayoutCreateInfo materialSetLayoutCI = vks::initializers::descriptorSetLayoutCreateInfo(materialSetLayoutBindings);
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &materialSetLayoutCI, nullptr, &materialSetLayout));
+
+	VkDescriptorSetLayout layouts[] = { descriptorSetLayout, materialSetLayout };
+
+	VkPipelineLayoutCreateInfo pPipelineLayoutCI = vks::initializers::pipelineLayoutCreateInfo(layouts, 2);
+	VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCI, nullptr, &pipelineLayout));
+
+	/*
+		Setup ray tracing shader groups
+	*/
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+
+	VkSpecializationMapEntry specializationMapEntry = vks::initializers::specializationMapEntry(0, 0, sizeof(uint32_t));
+	uint32_t maxRecursion = 4;
+	VkSpecializationInfo specializationInfo = vks::initializers::specializationInfo(1, &specializationMapEntry, sizeof(maxRecursion), &maxRecursion);
+
+	// Ray generation group
 	{
-		//m.lock();
-
-		const VkDeviceSize size = size_x * size_y * 4; // number of bytes
-
-		// Create screenshot image
-		createScreenshotStorageImage(VK_FORMAT_R8G8B8A8_UNORM, { size_x, size_y, 1 });
-
-		VK_CHECK_RESULT(vulkanDevice->createBuffer(
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&screenshotStagingBuffer,
-			size
-		));
-
-		// Update descriptor
-		{
-			VkDescriptorImageInfo storageImageDescriptor{ VK_NULL_HANDLE, screenshotStorageImage.view, VK_IMAGE_LAYOUT_GENERAL };
-			VkWriteDescriptorSet resultImageWrite = vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &storageImageDescriptor);
-			vkUpdateDescriptorSets(device, 1, &resultImageWrite, 0, VK_NULL_HANDLE);
-		}
-
-		// Prepare & flush command buffer
-		{
-			VkCommandBuffer screenshotCmdBuffer = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-
-			VkImageSubresourceRange subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-			VkDescriptorSet sets[] = { descriptorSet, scene.materials[0].descriptorSet };
-
-			vkCmdBindPipeline(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipeline);
-			vkCmdBindDescriptorSets(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipelineLayout, 0, 2, sets, 0, 0);
-
-			VkStridedDeviceAddressRegionKHR emptySbtEntry = {};
-			vkCmdTraceRaysKHR(
-				screenshotCmdBuffer,
-				&shaderBindingTables.raygen.stridedDeviceAddressRegion,
-				&shaderBindingTables.miss.stridedDeviceAddressRegion,
-				&shaderBindingTables.hit.stridedDeviceAddressRegion,
-				&emptySbtEntry,
-				size_x,
-				size_y,
-				1);
-
-
-
-			vks::tools::setImageLayout(
-				screenshotCmdBuffer,
-				screenshotStorageImage.image,
-				VK_IMAGE_LAYOUT_GENERAL,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				subresourceRange);
-
-
-
-			//vks::tools::insertImageMemoryBarrier(
-			//	screenshotCmdBuffer,
-			//	screenshotStorageImage.image,
-			//	0,
-			//	VK_ACCESS_TRANSFER_WRITE_BIT,
-			//	VK_IMAGE_LAYOUT_UNDEFINED,
-			//	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
-			//	VK_PIPELINE_STAGE_TRANSFER_BIT,
-			//	VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
-
-
-
-
-
-
-
-			VkBufferImageCopy copyRegion{};
-			copyRegion.bufferOffset = 0;
-			copyRegion.bufferRowLength = 0;
-			copyRegion.bufferImageHeight = 0;
-
-			copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			copyRegion.imageSubresource.mipLevel = 0;
-			copyRegion.imageSubresource.baseArrayLayer = 0;
-			copyRegion.imageSubresource.layerCount = 1;
-
-			copyRegion.imageOffset = { 0, 0, 0 };
-			copyRegion.imageExtent.width = size_x;
-			copyRegion.imageExtent.height = size_y;
-			copyRegion.imageExtent.depth = 1;
-
-			vkCmdCopyImageToBuffer(screenshotCmdBuffer, screenshotStorageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, screenshotStagingBuffer.buffer, 1, &copyRegion);
-
-
-
-
-			vulkanDevice->flushCommandBuffer(screenshotCmdBuffer, queue);
-
-
-		}
-
-		// Copy pixel data
-		VK_CHECK_RESULT(screenshotStagingBuffer.map());
-
-		vector<uint8_t> data(size);
-		memcpy(&data[0], screenshotStagingBuffer.mapped, size);
-
-		for (uint32_t i = 0; i < size_x; i++)
-		{
-			for (uint32_t j = 0; j < size_y; j++)
-			{
-				size_t index = 4 * (j * size_x + i);
-
-				//unsigned char temp_char;
-				//temp_char = data[index + 0];
-				//data[index + 0] = data[index + 2];
-				//data[index + 2] = temp_char;
-				data[index + 3] = 255;
-			}
-		}
-
-		//	if (1)//true == reverse_rows)
-		//	{
-		//		// Reverse row order
-		//		short unsigned int num_rows_to_swap = py;
-		//		vector<unsigned char> buffer(px * 4);
-
-		//		if (0 != py % 2)
-		//			num_rows_to_swap--;
-
-		//		num_rows_to_swap /= 2;
-
-		//		for (short unsigned int i = 0; i < num_rows_to_swap; i++)
-		//		{
-		//			size_t y_first = i * px * 4;
-		//			size_t y_last = (py - 1 - i) * px * 4;
-
-		//			memcpy(&buffer[0], &data[y_first], px * 4 * sizeof(unsigned char));
-		//			memcpy(&data[y_first], &data[y_last], px * 4 * sizeof(unsigned char));
-		//			memcpy(&data[y_last], &buffer[0], px * 4 * sizeof(unsigned char));
-		//		}
-		//	}
-
-
-
-
-
-			// Set up Targa TGA image data.
-			//unsigned char  idlength = 0;
-			//unsigned char  colourmaptype = 0;
-			//unsigned char  datatypecode = 2;
-			//unsigned short int colourmaporigin = 0;
-			//unsigned short int colourmaplength = 0;
-			//unsigned char  colourmapdepth = 0;
-			//unsigned short int x_origin = 0;
-			//unsigned short int y_origin = 0;
-
-			//unsigned short int px = size_x;
-			//unsigned short int py = size_y;
-			//unsigned char  bitsperpixel = 32;
-			//unsigned char  imagedescriptor = 0;
-			//vector<char> idstring;
-
-
-
-		//	// Write Targa TGA file to disk.
-		//	ofstream out(filename, ios::binary);
-
-		//	if (!out.is_open())
-		//	{
-		////		cout << "Failed to open TGA file for writing: " << filename << endl;
-		//		return;
-		//	}
-
-		//	out.write(reinterpret_cast<char*>(&idlength), 1);
-		//	out.write(reinterpret_cast<char*>(&colourmaptype), 1);
-		//	out.write(reinterpret_cast<char*>(&datatypecode), 1);
-		//	out.write(reinterpret_cast<char*>(&colourmaporigin), 2);
-		//	out.write(reinterpret_cast<char*>(&colourmaplength), 2);
-		//	out.write(reinterpret_cast<char*>(&colourmapdepth), 1);
-		//	out.write(reinterpret_cast<char*>(&x_origin), 2);
-		//	out.write(reinterpret_cast<char*>(&y_origin), 2);
-		//	out.write(reinterpret_cast<char*>(&px), 2);
-		//	out.write(reinterpret_cast<char*>(&py), 2);
-		//	out.write(reinterpret_cast<char*>(&bitsperpixel), 1);
-		//	out.write(reinterpret_cast<char*>(&imagedescriptor), 1);
-		//	out.write(reinterpret_cast<char*>(&data[0]), size_x * size_y * 4 * sizeof(unsigned char));
-		//	out.close();
-
-
-
-		int result = stbi_write_png(filename, size_x, size_y, 4, &data[0], 0);
-
-
-
-
-		// Update descriptor back to normal
-		{
-			VkDescriptorImageInfo storageImageDescriptor{ VK_NULL_HANDLE, storageImage.view, VK_IMAGE_LAYOUT_GENERAL };
-			VkWriteDescriptorSet resultImageWrite = vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &storageImageDescriptor);
-			vkUpdateDescriptorSets(device, 1, &resultImageWrite, 0, VK_NULL_HANDLE);
-		}
-
-		// Delete screenshot image
-		deleteScreenshotStorageImage();
-		screenshotStagingBuffer.destroy();
-
-
-		//m.unlock();
+		shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/raygen.rgen.spv", VK_SHADER_STAGE_RAYGEN_BIT_KHR));
+		// Pass recursion depth for reflections to ray generation shader via specialization constant
+		shaderStages.back().pSpecializationInfo = &specializationInfo;
+		VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+		shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+		shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+		shaderGroups.push_back(shaderGroup);
 	}
+
+	// Miss group
+	{
+		shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/miss.rmiss.spv", VK_SHADER_STAGE_MISS_BIT_KHR));
+		VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+		shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+		shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+		shaderGroups.push_back(shaderGroup);
+	}
+
+	// Shadow miss group
+	{
+		shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/shadow.rmiss.spv", VK_SHADER_STAGE_MISS_BIT_KHR));
+		VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+		shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+		shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+		shaderGroups.push_back(shaderGroup);
+	}
+
+	// Closest hit group
+	{
+		shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/closesthit.rchit.spv", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR));
+		VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+		shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+		shaderGroup.generalShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.closestHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+		shaderGroups.push_back(shaderGroup);
+	}
+
+	VkRayTracingPipelineCreateInfoKHR rayTracingPipelineCI = vks::initializers::rayTracingPipelineCreateInfoKHR();
+	rayTracingPipelineCI.stageCount = static_cast<uint32_t>(shaderStages.size());
+	rayTracingPipelineCI.pStages = shaderStages.data();
+	rayTracingPipelineCI.groupCount = static_cast<uint32_t>(shaderGroups.size());
+	rayTracingPipelineCI.pGroups = shaderGroups.data();
+	rayTracingPipelineCI.maxPipelineRayRecursionDepth = maxRecursion + 1;
+	rayTracingPipelineCI.layout = pipelineLayout;
+	VK_CHECK_RESULT(vkCreateRayTracingPipelinesKHR(device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline));
+}
+
+
+VkDescriptorSet screenshotDescriptorSet;
+VkDescriptorPool screenshotDescriptorPool;
+
+void createScreenshotDescriptorSet()
+{
+	std::vector<VkDescriptorPoolSize> poolSizes = {
+		{ VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2 }
+	};
+	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = vks::initializers::descriptorPoolCreateInfo(poolSizes, 1);
+	VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &screenshotDescriptorPool));
+
+	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = vks::initializers::descriptorSetAllocateInfo(screenshotDescriptorPool, &descriptorSetLayout, 1);
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &descriptorSetAllocateInfo, &screenshotDescriptorSet));
+
+	VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo = vks::initializers::writeDescriptorSetAccelerationStructureKHR();
+	descriptorAccelerationStructureInfo.accelerationStructureCount = 1;
+	descriptorAccelerationStructureInfo.pAccelerationStructures = &topLevelAS.handle;
+
+	VkWriteDescriptorSet accelerationStructureWrite{};
+	accelerationStructureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	// The specialized acceleration structure descriptor has to be chained
+	accelerationStructureWrite.pNext = &descriptorAccelerationStructureInfo;
+	accelerationStructureWrite.dstSet = screenshotDescriptorSet;
+	accelerationStructureWrite.dstBinding = 0;
+	accelerationStructureWrite.descriptorCount = 1;
+	accelerationStructureWrite.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+
+	VkDescriptorImageInfo storageImageDescriptor{ VK_NULL_HANDLE, screenshotStorageImage.view, VK_IMAGE_LAYOUT_GENERAL };
+	VkDescriptorBufferInfo vertexBufferDescriptor{ scene.vertices.buffer, 0, VK_WHOLE_SIZE };
+	VkDescriptorBufferInfo indexBufferDescriptor{ scene.indices.buffer, 0, VK_WHOLE_SIZE };
+
+	std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
+		// Binding 0: Top level acceleration structure
+		accelerationStructureWrite,
+		// Binding 1: Ray tracing result image
+		vks::initializers::writeDescriptorSet(screenshotDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, &storageImageDescriptor),
+		// Binding 2: Uniform data
+		vks::initializers::writeDescriptorSet(screenshotDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2, &ubo.descriptor),
+		// Binding 3: Scene vertex buffer
+		vks::initializers::writeDescriptorSet(screenshotDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3, &vertexBufferDescriptor),
+		// Binding 4: Scene index buffer
+		vks::initializers::writeDescriptorSet(screenshotDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 4, &indexBufferDescriptor),
+	};
+	vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, VK_NULL_HANDLE);
+}
+
+void screenshot(uint32_t size_x, uint32_t size_y, const char* filename)
+{
+	VkDeviceSize size = size_x * size_y * 4;
+
+	// Create screenshot image
+	createScreenshotStorageImage(VK_FORMAT_R8G8B8A8_UNORM, { size_x, size_y, 1 });
+
+	// Create screenshot descriptor set
+	createScreenshotDescriptorSet();
+
+	// Create staging buffer
+	VK_CHECK_RESULT(vulkanDevice->createBuffer(
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		&screenshotStagingBuffer,
+		size
+	));
+
+	VK_CHECK_RESULT(screenshotStagingBuffer.map());
+
+	// Prepare & flush command buffer
+	{
+		VkCommandBuffer screenshotCmdBuffer = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+
+		VkImageSubresourceRange subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+		VkDescriptorSet sets[] = { screenshotDescriptorSet, materialSet };
+
+		vkCmdBindPipeline(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipeline);
+		vkCmdBindDescriptorSets(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipelineLayout, 0, 2, sets, 0, 0);
+
+		VkStridedDeviceAddressRegionKHR emptySbtEntry = {};
+		vkCmdTraceRaysKHR(
+			screenshotCmdBuffer,
+			&shaderBindingTables.raygen.stridedDeviceAddressRegion,
+			&shaderBindingTables.miss.stridedDeviceAddressRegion,
+			&shaderBindingTables.hit.stridedDeviceAddressRegion,
+			&emptySbtEntry,
+			size_x,
+			size_y,
+			1);
+
+		vks::tools::setImageLayout(
+			screenshotCmdBuffer,
+			screenshotStorageImage.image,
+			VK_IMAGE_LAYOUT_GENERAL,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			subresourceRange);
+
+		VkBufferImageCopy copyRegion{};
+		copyRegion.bufferOffset = 0;
+		copyRegion.bufferRowLength = 0;
+		copyRegion.bufferImageHeight = 0;
+
+		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		copyRegion.imageSubresource.mipLevel = 0;
+		copyRegion.imageSubresource.baseArrayLayer = 0;
+		copyRegion.imageSubresource.layerCount = 1;
+
+		copyRegion.imageOffset = { 0, 0, 0 };
+		copyRegion.imageExtent.width = size_x;
+		copyRegion.imageExtent.height = size_y;
+		copyRegion.imageExtent.depth = 1;
+
+		vkCmdCopyImageToBuffer(screenshotCmdBuffer, screenshotStorageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, screenshotStagingBuffer.buffer, 1, &copyRegion);
+
+		VkBufferMemoryBarrier barrier = {};
+		barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+		barrier.buffer = screenshotStagingBuffer.buffer;
+		barrier.size = screenshotStagingBuffer.size;
+
+		vkCmdPipelineBarrier(
+			screenshotCmdBuffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT,
+			0,
+			0, nullptr,
+			1, &barrier,
+			0, nullptr
+		);
+
+		vulkanDevice->flushCommandBuffer(screenshotCmdBuffer, queue);
+	}
+
+	// Copy pixel data
+	uint8_t* pixels = new uint8_t[size];
+	memcpy(pixels, screenshotStagingBuffer.mapped, size);
+
+	for (size_t i = 0; i < size_x; i++)
+	{
+		for (size_t j = 0; j < size_y; j++)
+		{
+			size_t index = 4 * (j * size_x + i);
+
+			//unsigned char temp_char;
+			//temp_char = data[index + 0];
+			//data[index + 0] = data[index + 2];
+			//data[index + 2] = temp_char;
+			pixels[index + 3] = 255;
+		}
+	}
+
+
+	int result = stbi_write_png(filename, size_x, size_y, 4, pixels, 0);
+	delete[] pixels;
+
+	// Delete staging buffer
+	screenshotStagingBuffer.destroy();
+
+	// Delete screenshot image
+	deleteScreenshotStorageImage();
+
+	// Delete screenshot descriptor pool
+	vkDestroyDescriptorPool(device, screenshotDescriptorPool, nullptr);
+}
+
 
 
 	void createScreenshotStorageImage(VkFormat format, VkExtent3D extent)
@@ -636,6 +979,8 @@ public:
 	/*
 		Create the descriptor sets used for the ray tracing dispatch
 	*/
+
+	/*
 	void createDescriptorSets()
 	{
 		std::vector<VkDescriptorPoolSize> poolSizes = {
@@ -680,115 +1025,115 @@ public:
 			vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 4, &indexBufferDescriptor),
 		};
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, VK_NULL_HANDLE);
-	}
+	}*/
 
 	/*
 		Create our ray tracing pipeline
-	*/
-	void createRayTracingPipeline()
-	{
-		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
-			// Binding 0: Acceleration structure
-			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 0),
-			// Binding 1: Storage image
-			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR, 1),
-			// Binding 2: Uniform buffer
-			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, 2),
-			// Binding 3: Vertex buffer 
-			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 3),
-			// Binding 4: Index buffer
-			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 4),
-		};
+	//*/
+	//void createRayTracingPipeline()
+	//{
+	//	std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
+	//		// Binding 0: Acceleration structure
+	//		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 0),
+	//		// Binding 1: Storage image
+	//		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR, 1),
+	//		// Binding 2: Uniform buffer
+	//		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, 2),
+	//		// Binding 3: Vertex buffer 
+	//		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 3),
+	//		// Binding 4: Index buffer
+	//		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 4),
+	//	};
 
-		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI = vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCI, nullptr, &descriptorSetLayout));
+	//	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI = vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
+	//	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCI, nullptr, &descriptorSetLayout));
 
-		std::vector<VkDescriptorSetLayoutBinding> materialSetLayoutBindings = {
-			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 0),
-			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 1),
-			//vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 2),
-		};
+	//	std::vector<VkDescriptorSetLayoutBinding> materialSetLayoutBindings = {
+	//		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 0),
+	//		vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 1),
+	//		//vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, 2),
+	//	};
 
-		VkDescriptorSetLayoutCreateInfo materialSetLayoutCI = vks::initializers::descriptorSetLayoutCreateInfo(materialSetLayoutBindings);
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &materialSetLayoutCI, nullptr, &materialSetLayout));
+	//	VkDescriptorSetLayoutCreateInfo materialSetLayoutCI = vks::initializers::descriptorSetLayoutCreateInfo(materialSetLayoutBindings);
+	//	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &materialSetLayoutCI, nullptr, &materialSetLayout));
 
-		VkDescriptorSetLayout layouts[] = { descriptorSetLayout, materialSetLayout };
+	//	VkDescriptorSetLayout layouts[] = { descriptorSetLayout, materialSetLayout };
 
-		VkPipelineLayoutCreateInfo pPipelineLayoutCI = vks::initializers::pipelineLayoutCreateInfo(layouts, 2);
-		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCI, nullptr, &pipelineLayout));
+	//	VkPipelineLayoutCreateInfo pPipelineLayoutCI = vks::initializers::pipelineLayoutCreateInfo(layouts, 2);
+	//	VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCI, nullptr, &pipelineLayout));
 
-		/*
-			Setup ray tracing shader groups
-		*/
-		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+	//	/*
+	//		Setup ray tracing shader groups
+	//	*/
+	//	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
-		VkSpecializationMapEntry specializationMapEntry = vks::initializers::specializationMapEntry(0, 0, sizeof(uint32_t));
-		uint32_t maxRecursion = 8;
-		VkSpecializationInfo specializationInfo = vks::initializers::specializationInfo(1, &specializationMapEntry, sizeof(maxRecursion), &maxRecursion);
+	//	VkSpecializationMapEntry specializationMapEntry = vks::initializers::specializationMapEntry(0, 0, sizeof(uint32_t));
+	//	uint32_t maxRecursion = 8;
+	//	VkSpecializationInfo specializationInfo = vks::initializers::specializationInfo(1, &specializationMapEntry, sizeof(maxRecursion), &maxRecursion);
 
-		// Ray generation group
-		{
-			shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/raygen.rgen.spv", VK_SHADER_STAGE_RAYGEN_BIT_KHR));
-			// Pass recursion depth for reflections to ray generation shader via specialization constant
-			shaderStages.back().pSpecializationInfo = &specializationInfo;
-			VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
-			shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-			shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-			shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
-			shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
-			shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
-			shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
-			shaderGroups.push_back(shaderGroup);
-		}
+	//	// Ray generation group
+	//	{
+	//		shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/raygen.rgen.spv", VK_SHADER_STAGE_RAYGEN_BIT_KHR));
+	//		// Pass recursion depth for reflections to ray generation shader via specialization constant
+	//		shaderStages.back().pSpecializationInfo = &specializationInfo;
+	//		VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+	//		shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+	//		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+	//		shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+	//		shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroups.push_back(shaderGroup);
+	//	}
 
-		// Miss group
-		{
-			shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/miss.rmiss.spv", VK_SHADER_STAGE_MISS_BIT_KHR));
-			VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
-			shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-			shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-			shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
-			shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
-			shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
-			shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
-			shaderGroups.push_back(shaderGroup);
-		}
+	//	// Miss group
+	//	{
+	//		shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/miss.rmiss.spv", VK_SHADER_STAGE_MISS_BIT_KHR));
+	//		VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+	//		shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+	//		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+	//		shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+	//		shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroups.push_back(shaderGroup);
+	//	}
 
-		// Shadow miss group
-		{
-			shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/shadow.rmiss.spv", VK_SHADER_STAGE_MISS_BIT_KHR));
-			VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
-			shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-			shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-			shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
-			shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
-			shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
-			shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
-			shaderGroups.push_back(shaderGroup);
-		}
+	//	// Shadow miss group
+	//	{
+	//		shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/shadow.rmiss.spv", VK_SHADER_STAGE_MISS_BIT_KHR));
+	//		VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+	//		shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+	//		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+	//		shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+	//		shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroups.push_back(shaderGroup);
+	//	}
 
-		// Closest hit group
-		{
-			shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/closesthit.rchit.spv", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR));
-			VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
-			shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-			shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
-			shaderGroup.generalShader = VK_SHADER_UNUSED_KHR;
-			shaderGroup.closestHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
-			shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
-			shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
-			shaderGroups.push_back(shaderGroup);
-		}
+	//	// Closest hit group
+	//	{
+	//		shaderStages.push_back(loadShader(getShadersPath() + "raytracingreflections/closesthit.rchit.spv", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR));
+	//		VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+	//		shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+	//		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+	//		shaderGroup.generalShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroup.closestHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+	//		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+	//		shaderGroups.push_back(shaderGroup);
+	//	}
 
-		VkRayTracingPipelineCreateInfoKHR rayTracingPipelineCI = vks::initializers::rayTracingPipelineCreateInfoKHR();
-		rayTracingPipelineCI.stageCount = static_cast<uint32_t>(shaderStages.size());
-		rayTracingPipelineCI.pStages = shaderStages.data();
-		rayTracingPipelineCI.groupCount = static_cast<uint32_t>(shaderGroups.size());
-		rayTracingPipelineCI.pGroups = shaderGroups.data();
-		rayTracingPipelineCI.maxPipelineRayRecursionDepth = maxRecursion + 1;
-		rayTracingPipelineCI.layout = pipelineLayout;
-		VK_CHECK_RESULT(vkCreateRayTracingPipelinesKHR(device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline));
-	}
+	//	VkRayTracingPipelineCreateInfoKHR rayTracingPipelineCI = vks::initializers::rayTracingPipelineCreateInfoKHR();
+	//	rayTracingPipelineCI.stageCount = static_cast<uint32_t>(shaderStages.size());
+	//	rayTracingPipelineCI.pStages = shaderStages.data();
+	//	rayTracingPipelineCI.groupCount = static_cast<uint32_t>(shaderGroups.size());
+	//	rayTracingPipelineCI.pGroups = shaderGroups.data();
+	//	rayTracingPipelineCI.maxPipelineRayRecursionDepth = maxRecursion + 1;
+	//	rayTracingPipelineCI.layout = pipelineLayout;
+	//	VK_CHECK_RESULT(vkCreateRayTracingPipelinesKHR(device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline));
+	//}
 
 	/*
 		Create the uniform buffer used to pass matrices to the ray tracing ray generation shader
