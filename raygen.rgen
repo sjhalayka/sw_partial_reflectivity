@@ -36,8 +36,8 @@ const int blue_channel = 2;
 const float red_eta = 0.85;
 const float green_eta = 0.90;
 const float blue_eta = 0.95;
- ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
- ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
+ivec2 pixel_pos = ivec2(gl_LaunchIDEXT.xy);
+ivec2 res = ivec2(gl_LaunchSizeEXT.xy);
 
 uint prng_state = res.x * pixel_pos.y + pixel_pos.x;
 
@@ -241,26 +241,6 @@ float get_ray0(const int channel, const float eta)
 				
 
 
-				/*
-				float dist_color = 0.0;
-				float dist_opacity = 0.0;
-
-				// Do some simple white fog
-				// It really makes the image better
-				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
-				{
-					float dist = 0.0;
-
-					if(rays[i].parent_id != -1)
-						dist = distance(rays[rays[i].parent_id].origin, rays[i].origin);
-
-					dist_color = dist/10.0f; // suit to taste
-				}
-				*/
-
-
-
-
 				
 				traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, rays[i].origin.xyz, tmin, rays[i].direction.xyz, tmax, 0);
 				
@@ -268,11 +248,13 @@ float get_ray0(const int channel, const float eta)
 
 
 
+
+
+				// Do some fog in an AABB
 				float dist_color = 0.0;
 				float dist_opacity = 0.0;
 
-				// Do some fog in an AABB
-				if(false)//rays[i].external_reflection_ray || rays[i].external_refraction_ray)
+				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
 				{
 					float t0 = 0.0;
 					float t1 = 0.0;
@@ -463,30 +445,6 @@ float get_ray0(const int channel, const float eta)
 		if(used_count == 0)
 			break;
 	}
-
-
-
-
-	/*
-	// Step two: accumulate colour without Fresnel reflection-refraction
-	// Start at the tips of the branches, work backwards to the root
-	for(int i = current_buffer_index - 1; i >= 0; i--)
-	{
-		float accum = rays[i].base_color;
-
-		if(rays[i].child_reflect_id != -1)
-			accum = mix(accum, rays[rays[i].child_reflect_id].accumulated_color, rays[i].reflection_constant);
-
-		if(rays[i].child_refract_id != -1)
-			accum = mix(accum, rays[rays[i].child_refract_id].accumulated_color, 1.0 - rays[i].refraction_constant);
-
-		rays[i].accumulated_color = accum;
-	}
-	*/
-
-
-
-
 
 	
 	

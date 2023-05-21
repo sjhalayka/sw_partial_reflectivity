@@ -129,6 +129,7 @@ float stepAndOutputRNGFloat(inout uint rngState)
 
 float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 {
+	// Back up the payload before we trace some rays
 	RayPayload r = rayPayload;
 
 	vec3 lightVector = normalize(light_pos);
@@ -150,14 +151,11 @@ float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness
 
 	float shadow = 0.0;
 
-	float total_inner_dist = 0.0;
-
 	vec3 first_origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
 	vec3 first_biased_origin = first_origin + normal * 0.01;
 
 	vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
 	vec3 biased_origin = origin + normal * 0.01;
-
 
 	if(dot(normal, lightVector) < 0.0)
 	{
@@ -174,13 +172,13 @@ float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness
 
 		int num_intersections = 0;
 
-		float first_opacity = 0.0;;
+		float first_opacity = 0.0;
+
+		float max_inner_dist = 0.0;
+		float total_inner_dist = 0.0;
 
 		do
 		{
-			//shadowed = true; // Make sure to set this to the default before tracing the ray!
-			//traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
-		
 			vec3 prev_biased_origin = biased_origin;
 
 			uint rayFlags = gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT | gl_RayFlagsTerminateOnFirstHitEXT;
@@ -191,26 +189,32 @@ float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness
 			traceRayEXT(topLevelAS, rayFlags, cullMask, 0, 0, 0, biased_origin, tmin, lightVector, tmax, 0);
 
 			biased_origin = biased_origin + lightVector*0.01;
-
+	
 			if(num_intersections % 2 != 0)
 			{
 				float inner_dist = distance(biased_origin, prev_biased_origin);
 				total_inner_dist += inner_dist * 0.5*(first_opacity + rayPayload.opacity);
+
+				max_inner_dist += inner_dist;
 			}
 			else
 			{
+				float inner_dist = distance(biased_origin, prev_biased_origin);
+				max_inner_dist += inner_dist;
+
 				first_opacity = rayPayload.opacity;
 			}
-
-			if(rayPayload.distance != -1)
-				num_intersections++;
+			
+			num_intersections++;
 		}
 		while(rayPayload.distance != -1);
 
-		shadow = 1 - total_inner_dist / distance(biased_origin, first_biased_origin);
+		shadow = 1.0 - total_inner_dist / max_inner_dist;//distance(biased_origin, first_biased_origin);
 	}
 
+	// Restore the payload after we've traced some rays
 	rayPayload = r;
+
 	return shadow;
 }
 
