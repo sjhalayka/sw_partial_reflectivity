@@ -126,7 +126,7 @@ float stepAndOutputRNGFloat(inout uint rngState)
 
 
 
-
+/*
 float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 {
 	// Back up the payload before we trace some rays
@@ -177,7 +177,7 @@ float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness
 		float max_inner_dist = 0.0;
 		float total_inner_dist = 0.0;
 
-		do
+		while(true)
 		{
 			vec3 prev_biased_origin = biased_origin;
 
@@ -190,6 +190,8 @@ float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness
 
 			biased_origin = biased_origin + lightVector*0.01;
 	
+
+
 			if(num_intersections % 2 != 0)
 			{
 				float inner_dist = distance(biased_origin, prev_biased_origin);
@@ -205,11 +207,14 @@ float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness
 				first_opacity = rayPayload.opacity;
 			}
 			
+			if(rayPayload.distance == -1)
+				break;
+
 			num_intersections++;
 		}
-		while(rayPayload.distance != -1);
 
-		shadow = 1.0 - total_inner_dist / max_inner_dist;//distance(biased_origin, first_biased_origin);
+
+		shadow = 1.0 - total_inner_dist / distance(biased_origin, first_biased_origin);
 	}
 
 	// Restore the payload after we've traced some rays
@@ -217,6 +222,56 @@ float get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness
 
 	return shadow;
 }
+*/
+
+
+
+bool get_shadow(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
+{
+	vec3 lightVector = normalize(light_pos);
+
+	// Pseudorandomize the direction of the light
+	// in order to get blurry shadows
+	vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
+
+	// Stick to the correct hemisphere
+	if(dot(rdir, lightVector) < 0.0)
+		rdir = -rdir;
+	
+	// Keep the shadows stay dynamic to some degree
+	// I mean, how blurry do you really need the edges to be?
+	if(shadow_sharpness < 0.75)
+		shadow_sharpness = 0.75;
+
+	lightVector = mix(rdir, lightVector, shadow_sharpness);
+
+	bool shadow = false;
+
+	if(dot(normal, lightVector) < 0.0)
+	{
+		shadow = true;
+	}
+	else
+	{
+		// Shadow casting
+		float tmin = 0.001;
+		float tmax = 1000.0;
+
+		vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
+		vec3 biased_origin = origin + normal * 0.01;
+
+		shadowed = true; // Make sure to set this to the default before tracing the ray!
+		traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
+		
+		if(shadowed)
+			shadow = true;
+		else
+			shadow = false;
+	}
+
+	return shadow;
+}
+
 
 
 void main()
@@ -254,11 +309,18 @@ void main()
 
 	rayPayload.color = vec3(0, 0, 0);
 
+	/*
 	for (int i = 0; i < max_lights; i++)
 	{
 		float s = get_shadow(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);
 		s = pow(s, 10.0);
 
 		rayPayload.color += s*phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
-	}
+	}	
+	*/
+
+	for (int i = 0; i < max_lights; i++)
+		if(false == get_shadow(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector))
+			rayPayload.color += phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
+
 }
