@@ -1420,7 +1420,7 @@ void screenshot(uint32_t size_x, uint32_t size_y, const char* filename)
 
 		if (do_screenshot)
 		{
-			screenshot(width * 6, height * 6, "v_rt_reflect.png");
+			screenshot(width * 4, height * 4, "v_rt_reflect.png");
 			do_screenshot = false;
 		}
 
