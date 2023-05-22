@@ -24,27 +24,17 @@ public:
 	AccelerationStructure topLevelAS{};
 
 	bool do_screenshot = false;
-	//mutex m;
-
-	//we have a fence object created from somewhere
-	VkFence myFence;
-
-
-
-
-
-
 
 	virtual void keyPressed(uint32_t keyCode)
 	{
 		switch (keyCode)
 		{
-		case KEY_SPACE:
-		{
-			do_screenshot = true;
+			case KEY_SPACE:
+			{
+				do_screenshot = true;
 
-			break;
-		}
+				break;
+			}
 		}
 	}
 

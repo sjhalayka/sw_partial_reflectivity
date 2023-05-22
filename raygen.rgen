@@ -116,6 +116,8 @@ bool get_shadow(vec3 wro, vec3 wrd, float hitt, const vec3 light_pos, const vec3
 	return shadow;
 }
 
+
+
 // Max. number of recursion is passed via a specialization constant
 layout (constant_id = 0) const int MAX_RECURSION = 0;
 const int buffer_size = 32;
@@ -131,10 +133,71 @@ vec4 get_sample(vec3 pos)
 {
 // Get 3D texture coords from pos and aabb_min and aabb_max
 
-	//vec3 rdir = vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state));
-
-	return vec4(1.0);
+	return vec4(0.01); // fog, for now.
 }
+
+
+
+ const vec4 C = vec4(0.3, 0.5, 0.4, 0.2);
+ const uint max_iterations = 8;
+ const float threshold = 4.0;
+ const float z_w = 0.0;
+
+// Perform the quaternion square operation
+vec4 qsquare(vec4 q)
+{
+	vec4 qout;
+
+	qout.x = q.x * q.x - dot(q.yzw, q.yzw);
+
+	// The cross product of a 3D vector and itself is (0, 0, 0), and so
+	// the yzw values are greatly simplified
+	qout.yzw = 2 * q.x * q.yzw;
+
+	return qout;
+}
+
+// Calculate magnitude of quaternion while underdoing iteration
+float iterate(vec4 z)
+{
+	const float threshold_sq = threshold * threshold;
+	float magnitude_sq = dot(z, z);
+
+	for (int i = 0; i < max_iterations; i++)
+	{
+		// Calculate the traditional quaternion Julia set
+		z = qsquare(z) + C;
+
+		// Assign value to magnitude_sq, and then check its value
+		// compared to threshold_sq
+		// 
+		// If the magnitude is greater than or equal to the threshold
+		// value, then this point on the grid is considered divergent, 
+		// or not in the quaternion Julia set
+		if ((magnitude_sq = dot(z, z)) >= threshold_sq)
+			break;
+	}
+
+	// Return magnitude
+	return sqrt(magnitude_sq);
+}
+
+vec4 get_pseudorandom_sample(vec3 pos)
+{
+	return vec4(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), 1.0);
+}
+/*
+vec4 get_sample(vec3 pos)
+{
+	float x = 1.0 - clamp(iterate(vec4(pos, z_w)) / threshold, 0.0, 1.0);
+
+	return vec4(x, x, x, x);
+
+
+//	return vec4(1.0); // fog, for now.
+}
+*/
+
 
 bool in_aabb(vec3 pos, vec3 aabb_min, vec3 aabb_max)
 {
@@ -283,35 +346,38 @@ float get_ray0(const int channel, const float eta)
 
 							for(int k = 0; k < max_lights; k++)
 							{
-								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
+								float light_color = 0.0;
 
-								float light_color = 1.0;
-
-								if(shadow)
+								if(get_sample(curr_step).r != 0.0)
 								{
-									light_color = 0.0;
-								}
-								else
-								{
-									const vec3 light_steps_start = curr_step;
-									const vec3 light_steps_end = ubo.light_positions[k].xyz;
-									const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
-									const vec3 light_step = (light_steps_end - light_steps_start)/float(light_num_steps);
-									
-									vec3 light_curr_step = light_steps_start;
+									bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
-									for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step)
+									if(shadow)
 									{
-										// If stepped outside of the AABB then abort early
-										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
-											break;
+										light_color = 0.0;
+									}
+									else
+									{
+										const vec3 light_steps_start = curr_step;
+										const vec3 light_steps_end = ubo.light_positions[k].xyz;
+										const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
+										const vec3 light_step = (light_steps_end - light_steps_start)/float(light_num_steps);
+									
+										vec3 light_curr_step = light_steps_start;
 
-										if(channel == red_channel)
-											light_color -= get_sample(light_curr_step).r*0.01;
-										else if(channel == green_channel)
-											light_color -= get_sample(light_curr_step).g*0.01;
-										else
-											light_color -= get_sample(light_curr_step).b*0.01;
+										for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step)
+										{
+											// If stepped outside of the AABB then abort early
+											if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
+												break;
+
+											//if(channel == red_channel)
+												light_color += get_sample(light_curr_step).r;
+											//else if(channel == green_channel)
+										    //	light_color += get_sample(light_curr_step).r;
+										    //else
+											//	light_color += get_sample(light_curr_step).r;
+										}
 									}
 								}
 
@@ -327,6 +393,7 @@ float get_ray0(const int channel, const float eta)
 
 								lights_color += light_color;
 							}
+
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 							dist_color += trans * lights_color;
@@ -518,8 +585,6 @@ float get_ray0(const int channel, const float eta)
 
 void main() 
 {
-
-
 	// Calculate chromatic aberration
 
 	prng_state = res.x * pixel_pos.y + pixel_pos.x;
