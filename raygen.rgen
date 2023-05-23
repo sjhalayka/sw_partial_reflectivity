@@ -349,13 +349,14 @@ float get_ray0(const int channel, const float eta)
 								float light_color = 1.0;
 								float light_opacity = 0.0;
 
-								if(true)//get_sample(curr_step).r != 0.0)
+								if(get_sample(curr_step).r != 0.0)
 								{
 									bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
 									if(shadow)
 									{
 										light_color = 0.0;
+										lights_opacity = 1.0;
 									}
 									else
 									{
@@ -400,7 +401,7 @@ float get_ray0(const int channel, const float eta)
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 							dist_color += trans * lights_color;
-							dist_opacity += trans * 0.05 * (1 - lights_opacity);
+							dist_opacity += trans * 0.05 * (1.0 - lights_opacity);
 						}
 					}
 				}
