@@ -903,8 +903,8 @@ void screenshot(uint32_t size_x, uint32_t size_y, const char* filename)
 		uniformData.light_positions[1].x = -uniformData.light_positions[1].x;
 		uniformData.light_positions[1].z = -uniformData.light_positions[1].z;
 
-		uniformData.light_colors[0] = glm::vec4(1, 0, 0, 1);
-		uniformData.light_colors[1] = glm::vec4(0, 0, 1, 1);
+		uniformData.light_colors[0] = glm::vec4(1, 1, 1, 1);
+		uniformData.light_colors[1] = glm::vec4(1, 1, 1, 1);
 
 		uniformData.camera_pos = camera.position;
 
