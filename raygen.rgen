@@ -341,7 +341,7 @@ float get_ray0(const int channel, const float eta)
 							if(false == in_aabb(curr_step, aabb_min, aabb_max))
 								continue;
 
-							float lights_color = 1.0;
+							float lights_color = 0.0;
 							float lights_opacity = 0.0;
 
 							for(int k = 0; k < max_lights; k++)
@@ -349,7 +349,9 @@ float get_ray0(const int channel, const float eta)
 								float light_color = 1.0;
 								float light_opacity = 0.0;
 
-								if(get_sample(curr_step).r != 0.0)
+								float s = get_sample(curr_step).r;
+
+								if(s != 0.0)
 								{
 									bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
@@ -373,18 +375,16 @@ float get_ray0(const int channel, const float eta)
 											if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 												break;
 
-											light_color -= get_sample(light_curr_step).r;
-											light_opacity += get_sample(light_curr_step).r;
+											light_color -= s;
+											light_opacity += s;
 										}
 									}
 								}
 								else
 								{
 									light_color = 0.0;
+									light_opacity = 0.0;
 								}
-
-								light_color = clamp(light_color, 0.0, 1.0);
-								light_opacity = clamp(light_opacity, 0.0, 1.0);
 
 								// Apply lighting
 								if(channel == red_channel)
@@ -398,6 +398,8 @@ float get_ray0(const int channel, const float eta)
 								lights_opacity += light_opacity;
 							}
 
+							//lights_color = clamp(lights_color, 0.0, 1.0);
+							//lights_opacity = clamp(lights_opacity, 0.0, 1.0);
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 							dist_color += trans * lights_color;
