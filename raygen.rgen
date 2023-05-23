@@ -358,7 +358,7 @@ float get_ray0(const int channel, const float eta)
 									if(shadow)
 									{
 										light_color = 0.0;
-										lights_opacity = 1.0;
+										light_opacity = 1.0;
 									}
 									else
 									{
