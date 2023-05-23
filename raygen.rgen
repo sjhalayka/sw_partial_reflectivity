@@ -186,8 +186,8 @@ vec4 get_pseudorandom_sample(vec3 pos)
 {
 	return vec4(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), 1.0);
 }
-/*
-vec4 get_sample(vec3 pos)
+
+vec4 get_fractal_sample(vec3 pos)
 {
 	float x = 1.0 - clamp(iterate(vec4(pos, z_w)) / threshold, 0.0, 1.0);
 
@@ -196,7 +196,6 @@ vec4 get_sample(vec3 pos)
 
 //	return vec4(1.0); // fog, for now.
 }
-*/
 
 
 bool in_aabb(vec3 pos, vec3 aabb_min, vec3 aabb_max)
@@ -371,12 +370,7 @@ float get_ray0(const int channel, const float eta)
 											if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 												break;
 
-											//if(channel == red_channel)
-												light_color += get_sample(light_curr_step).r;
-											//else if(channel == green_channel)
-										    //	light_color += get_sample(light_curr_step).r;
-										    //else
-											//	light_color += get_sample(light_curr_step).r;
+											light_color += get_sample(light_curr_step).r;
 										}
 									}
 								}
