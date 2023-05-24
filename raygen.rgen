@@ -383,9 +383,9 @@ float get_ray0(const int channel, const float eta)
 												break;
 
 											light_color -= get_sample(light_curr_step).r;
+											light_opacity += s;
 										}
 
-										light_opacity = s;
 									}
 								}
 								else

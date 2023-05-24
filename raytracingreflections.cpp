@@ -36,7 +36,7 @@ public:
 		{
 			case KEY_SPACE:
 			{
-				screenshot(width * 8, height * 8, "v_rt_reflect.png");
+				screenshot(width * 4, height * 4, "v_rt_reflect.png");
 
 				break;
 			}
@@ -884,6 +884,30 @@ public:
 
 	void updateUniformBuffers()
 	{
+		size_t num_cams_wide = 4;
+		size_t cam_index_x = 0;
+		size_t cam_index_y = 0;
+
+		float pi = 4.0 * atan(1.0);
+		float near_plane = 0.01;
+		float far_plane = 1000.0;
+		const float deg_to_rad = (1.0 / 360.0) * 2 * pi;
+		float aspect = width / height;
+		float tangent = tan((45.0 / 2.0) * deg_to_rad);
+		float height = near_plane * tangent; // Half height of near_plane plane.
+		float width = height * aspect; // Half width of near_plane plane.
+
+		float cam_width = 2 * width / num_cams_wide;
+		float cam_height = 2 * height / num_cams_wide;
+
+		float left = -width + cam_index_x * cam_width;
+		float right = -width + (cam_index_x + 1) * cam_width;
+		float bottom = -height + cam_index_y * cam_height;
+		float top = -height + (cam_index_y + 1) * cam_height;
+
+		glm::mat4x4 m = glm::frustum(left, right, bottom, top, near_plane, far_plane);
+
+	//	uniformData.projInverse = glm::inverse(m);
 		uniformData.projInverse = glm::inverse(camera.matrices.perspective);
 		uniformData.viewInverse = glm::inverse(camera.matrices.view);
 
