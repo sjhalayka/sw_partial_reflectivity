@@ -17,6 +17,9 @@ using std::mutex;
 #include "stb_image_write.h"
 
 
+// https://manual.notch.one/0.9.23/en/docs/faq/extending-gpu-timeout-detection/
+
+
 class VulkanExample : public VulkanRaytracingSample
 {
 public:
@@ -33,7 +36,7 @@ public:
 		{
 			case KEY_SPACE:
 			{
-				screenshot(width * 4, height * 4, "v_rt_reflect.png");
+				screenshot(width * 8, height * 8, "v_rt_reflect.png");
 
 				break;
 			}
