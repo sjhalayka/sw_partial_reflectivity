@@ -9,8 +9,13 @@ Supports:
 - Multiple textures
 - Fast glossy (noisy) reflections
 - Fast blurry (noisy) shadow edges
-- Large-format screenshots (buggy)
 - Volumetric fog via ray marching/tracing
+- Large-format screenshots (requires a TDR extension):
+
+KeyPath   : HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\GraphicsDrivers
+KeyValue  : TdrDelay
+ValueType : REG_DWORD (32bit)
+ValueData : Number of seconds to delay. 2 seconds is the default value.
 
 Soon to support:
 - Depth of field effects
