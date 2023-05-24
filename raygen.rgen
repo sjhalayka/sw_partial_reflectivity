@@ -346,7 +346,7 @@ float get_ray0(const int channel, const float eta)
 
 							for(int k = 0; k < max_lights; k++)
 							{
-								float light_color = 0.0;
+								float light_color = 1.0;
 								float light_opacity = 0.0;
 
 								float s = get_sample(curr_step).r;
@@ -362,9 +362,6 @@ float get_ray0(const int channel, const float eta)
 									}
 									else
 									{
-										light_color = 1.0;
-										light_opacity = 0.0;
-
 										const vec3 light_steps_start = curr_step;
 										const vec3 light_steps_end = ubo.light_positions[k].xyz;
 										const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
@@ -382,6 +379,11 @@ float get_ray0(const int channel, const float eta)
 											light_opacity += s;
 										}
 									}
+								}
+								else
+								{
+									light_color = 0.0;
+									light_opacity = 0.0;
 								}
 
 								// Apply lighting
@@ -581,9 +583,6 @@ float get_ray0(const int channel, const float eta)
 	// Return root ray segment colour
 	return rays[0].accumulated_color;
 }
-
-
-
 
 
 
