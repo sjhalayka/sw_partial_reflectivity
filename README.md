@@ -10,7 +10,7 @@ Supports:
 - Fast glossy (noisy) reflections
 - Fast blurry (noisy) shadow edges
 - Volumetric fog via ray marching/tracing
-- Large-format screenshots (requires a TDR extension):
+- Large-format screenshots (may require a TDR time extension):
 
 KeyPath   : HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\GraphicsDrivers<br>
 KeyValue  : TdrDelay<br>
