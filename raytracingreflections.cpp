@@ -27,7 +27,8 @@ public:
 	AccelerationStructure topLevelAS{};
 
 	VkFence fence;
-
+	glm::mat4x4 frustum_matrix;
+	bool taking_screenshot = false;
 
 
 	virtual void keyPressed(uint32_t keyCode)
@@ -36,7 +37,15 @@ public:
 		{
 			case KEY_SPACE:
 			{
-				screenshot(width * 4, height * 4, "v_rt_reflect.png");
+				taking_screenshot = true;
+
+				paused = true;
+
+				screenshot(4, "v_rt_reflect.tga");
+				
+				paused = false;
+
+				taking_screenshot = false;
 
 				break;
 			}
@@ -266,12 +275,14 @@ public:
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, VK_NULL_HANDLE);
 	}
 
-	void screenshot(uint32_t size_x, uint32_t size_y, const char* filename)
+	void screenshot(size_t num_cams_wide, const char* filename)
 	{
-		//vkWaitForFences(device, 1, &fence, true, UINT64_MAX);
-		//vkResetFences(device, 1, &fence);
+		const unsigned long int size_x = width;
+		const unsigned long int size_y = height;
 
-		VkDeviceSize size = size_x * size_y * 4;
+		glm::mat4x4 cam_mat = camera.matrices.perspective;
+
+		VkDeviceSize size = size_x * size_y * 4; // 4 bytes per pixel
 
 		// Create screenshot image
 		createScreenshotStorageImage(VK_FORMAT_R8G8B8A8_UNORM, { size_x, size_y, 1 });
@@ -289,94 +300,139 @@ public:
 
 		VK_CHECK_RESULT(screenshotStagingBuffer.map());
 
-		// Prepare & flush command buffer
+
+
+		unsigned short int px = size_x * static_cast<unsigned short>(num_cams_wide);
+		unsigned short int py = size_y * static_cast<unsigned short>(num_cams_wide);
+
+		size_t num_bytes = 4 * px * py;
+		vector<unsigned char> pixel_data(num_bytes);
+		vector<unsigned char> fbpixels(4 * size_x * size_y);
+
+		const size_t total_cams = num_cams_wide * num_cams_wide;
+
+		size_t cam_count = 0;
+		
+		// Loop through subcameras.
+		for (size_t cam_num_x = 0; cam_num_x < num_cams_wide; cam_num_x++)
 		{
-			VkCommandBuffer screenshotCmdBuffer = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-
-			VkImageSubresourceRange subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-			VkDescriptorSet sets[] = { screenshotDescriptorSet, materialSet };
-
-			vkCmdBindPipeline(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipeline);
-			vkCmdBindDescriptorSets(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipelineLayout, 0, 2, sets, 0, 0);
-
-			VkStridedDeviceAddressRegionKHR emptySbtEntry = {};
-			vkCmdTraceRaysKHR(
-				screenshotCmdBuffer,
-				&shaderBindingTables.raygen.stridedDeviceAddressRegion,
-				&shaderBindingTables.miss.stridedDeviceAddressRegion,
-				&shaderBindingTables.hit.stridedDeviceAddressRegion,
-				&emptySbtEntry,
-				size_x,
-				size_y,
-				1);
-
-			vks::tools::setImageLayout(
-				screenshotCmdBuffer,
-				screenshotStorageImage.image,
-				VK_IMAGE_LAYOUT_GENERAL,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				subresourceRange);
-
-			VkBufferImageCopy copyRegion{};
-			copyRegion.bufferOffset = 0;
-			copyRegion.bufferRowLength = 0;
-			copyRegion.bufferImageHeight = 0;
-
-			copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			copyRegion.imageSubresource.mipLevel = 0;
-			copyRegion.imageSubresource.baseArrayLayer = 0;
-			copyRegion.imageSubresource.layerCount = 1;
-
-			copyRegion.imageOffset = { 0, 0, 0 };
-			copyRegion.imageExtent.width = size_x;
-			copyRegion.imageExtent.height = size_y;
-			copyRegion.imageExtent.depth = 1;
-
-			vkCmdCopyImageToBuffer(screenshotCmdBuffer, screenshotStorageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, screenshotStagingBuffer.buffer, 1, &copyRegion);
-
-			VkBufferMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
-			barrier.buffer = screenshotStagingBuffer.buffer;
-			barrier.size = screenshotStagingBuffer.size;
-
-			vkCmdPipelineBarrier(
-				screenshotCmdBuffer,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT,
-				0,
-				0, nullptr,
-				1, &barrier,
-				0, nullptr
-			);
-
-
-			vulkanDevice->flushCommandBuffer(screenshotCmdBuffer, queue);
-		}
-
-		// Copy pixel data
-		uint8_t* pixels = new uint8_t[size];
-		memcpy(pixels, screenshotStagingBuffer.mapped, size);
-
-		for (size_t i = 0; i < size_x; i++)
-		{
-			for (size_t j = 0; j < size_y; j++)
+			for (size_t cam_num_y = 0; cam_num_y < num_cams_wide; cam_num_y++)
 			{
-				size_t index = 4 * (j * size_x + i);
+				const float pi = 4.0 * atan(1.0);
+				const float near_plane = 0.01;
+				const float far_plane = 1000.0;
+				const float deg_to_rad = (1.0 / 360.0) * 2 * pi;
+				const float aspect = static_cast<float>(size_x) / static_cast<float>(size_y);
+				const float tangent = tan((45.0 / 2.0) * deg_to_rad);
+				const float h = near_plane * tangent; // Half height of near_plane plane.
+				const float w = h * aspect; // Half width of near_plane plane.
 
-				//unsigned char temp_char;
-				//temp_char = data[index + 0];
-				//data[index + 0] = data[index + 2];
-				//data[index + 2] = temp_char;
-				pixels[index + 3] = 255;
+				const float cam_width = 2.0 * w / num_cams_wide;
+				const float cam_height = 2.0 * h / num_cams_wide;
+
+				const float left = -w + cam_num_x * cam_width;
+				const float right = -w + (cam_num_x + 1) * cam_width;
+				const float bottom = -h + cam_num_y * cam_height;
+				const float top = -h + (cam_num_y + 1) * cam_height;
+
+				camera.matrices.perspective = glm::frustum(left, right, bottom, top, near_plane, far_plane);
+				updateUniformBuffers();
+
+
+		// Prepare & flush command buffer
+				{
+					VkCommandBuffer screenshotCmdBuffer = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+
+					VkImageSubresourceRange subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+					VkDescriptorSet sets[] = { screenshotDescriptorSet, materialSet };
+
+					vkCmdBindPipeline(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipeline);
+					vkCmdBindDescriptorSets(screenshotCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipelineLayout, 0, 2, sets, 0, 0);
+
+					VkStridedDeviceAddressRegionKHR emptySbtEntry = {};
+					vkCmdTraceRaysKHR(
+						screenshotCmdBuffer,
+						&shaderBindingTables.raygen.stridedDeviceAddressRegion,
+						&shaderBindingTables.miss.stridedDeviceAddressRegion,
+						&shaderBindingTables.hit.stridedDeviceAddressRegion,
+						&emptySbtEntry,
+						size_x,
+						size_y,
+						1);
+
+					vks::tools::setImageLayout(
+						screenshotCmdBuffer,
+						screenshotStorageImage.image,
+						VK_IMAGE_LAYOUT_GENERAL,
+						VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						subresourceRange);
+
+					VkBufferImageCopy copyRegion{};
+					copyRegion.bufferOffset = 0;
+					copyRegion.bufferRowLength = 0;
+					copyRegion.bufferImageHeight = 0;
+
+					copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					copyRegion.imageSubresource.mipLevel = 0;
+					copyRegion.imageSubresource.baseArrayLayer = 0;
+					copyRegion.imageSubresource.layerCount = 1;
+
+					copyRegion.imageOffset = { 0, 0, 0 };
+					copyRegion.imageExtent.width = size_x;
+					copyRegion.imageExtent.height = size_y;
+					copyRegion.imageExtent.depth = 1;
+
+					vkCmdCopyImageToBuffer(screenshotCmdBuffer, screenshotStorageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, screenshotStagingBuffer.buffer, 1, &copyRegion);
+
+					VkBufferMemoryBarrier barrier = {};
+					barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+					barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+					barrier.buffer = screenshotStagingBuffer.buffer;
+					barrier.size = screenshotStagingBuffer.size;
+
+					vkCmdPipelineBarrier(
+						screenshotCmdBuffer,
+						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT,
+						0,
+						0, nullptr,
+						1, &barrier,
+						0, nullptr
+					);
+
+
+					vulkanDevice->flushCommandBuffer(screenshotCmdBuffer, queue);
+
+					memcpy(&fbpixels[0], screenshotStagingBuffer.mapped, size);
+
+					for (GLint i = 0; i < size_x; i++)
+					{
+						for (GLint j = 0; j < size_y; j++)
+						{
+							size_t fb_index = 4 * (j * size_x + i);
+
+							size_t screenshot_x = cam_num_x * size_x + i;
+							size_t screenshot_y = cam_num_y * size_y + j;
+							size_t screenshot_index = 4 * (screenshot_y * (size_x * num_cams_wide) + screenshot_x);
+
+							pixel_data[screenshot_index + 0] = fbpixels[fb_index + 0];
+							pixel_data[screenshot_index + 1] = fbpixels[fb_index + 1];
+							pixel_data[screenshot_index + 2] = fbpixels[fb_index + 2];
+							pixel_data[screenshot_index + 3] = 255;
+						}
+					}
+				}
+
+				cam_count++;
 			}
+
+			int result = stbi_write_png("v_rt_reflect.png", px, py, 4, &pixel_data[0], 0);
 		}
 
 
-		int result = stbi_write_png(filename, size_x, size_y, 4, pixels, 0);
-		delete[] pixels;
-
+		camera.matrices.perspective = cam_mat;
+		updateUniformBuffers();
 
 		// Delete staging buffer
 		screenshotStagingBuffer.destroy();
@@ -884,31 +940,13 @@ public:
 
 	void updateUniformBuffers()
 	{
-		size_t num_cams_wide = 4;
-		size_t cam_index_x = 0;
-		size_t cam_index_y = 0;
-
-		float pi = 4.0 * atan(1.0);
-		float near_plane = 0.01;
-		float far_plane = 1000.0;
-		const float deg_to_rad = (1.0 / 360.0) * 2 * pi;
-		float aspect = width / height;
-		float tangent = tan((45.0 / 2.0) * deg_to_rad);
-		float height = near_plane * tangent; // Half height of near_plane plane.
-		float width = height * aspect; // Half width of near_plane plane.
-
-		float cam_width = 2 * width / num_cams_wide;
-		float cam_height = 2 * height / num_cams_wide;
-
-		float left = -width + cam_index_x * cam_width;
-		float right = -width + (cam_index_x + 1) * cam_width;
-		float bottom = -height + cam_index_y * cam_height;
-		float top = -height + (cam_index_y + 1) * cam_height;
-
-		glm::mat4x4 m = glm::frustum(left, right, bottom, top, near_plane, far_plane);
+		//if (taking_screenshot)
+		//	uniformData.projInverse = glm::inverse(frustum_matrix);
+		//else
+			uniformData.projInverse = glm::inverse(camera.matrices.perspective);
 
 	//	uniformData.projInverse = glm::inverse(m);
-		uniformData.projInverse = glm::inverse(camera.matrices.perspective);
+		//uniformData.projInverse = glm::inverse(camera.matrices.perspective);
 		uniformData.viewInverse = glm::inverse(camera.matrices.view);
 
 		// For rendering the normals correctly in the closest hit shader
@@ -1019,7 +1057,6 @@ public:
 		//createTopLevelAccelerationStructure();
 
 		draw();
-
 
 
 
