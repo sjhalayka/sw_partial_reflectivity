@@ -311,8 +311,6 @@ public:
 
 		const size_t total_cams = num_cams_wide * num_cams_wide;
 
-		size_t cam_count = 0;
-		
 		// Loop through subcameras.
 		for (size_t cam_num_x = 0; cam_num_x < num_cams_wide; cam_num_x++)
 		{
@@ -421,8 +419,6 @@ public:
 						}
 					}
 				}
-
-				cam_count++;
 			}
 		}
 
