@@ -26,9 +26,11 @@ public:
 	AccelerationStructure bottomLevelAS{};
 	AccelerationStructure topLevelAS{};
 
-	VkFence fence;
-	glm::mat4x4 frustum_matrix;
 	bool taking_screenshot = false;
+	
+	const float fov = 45.0;
+	const float near_plane = 0.01;
+	const float far_plane = 1000.0;
 
 
 	virtual void keyPressed(uint32_t keyCode)
@@ -38,13 +40,11 @@ public:
 			case KEY_SPACE:
 			{
 				taking_screenshot = true;
-
 				paused = true;
 
-				screenshot(8, "v_rt_reflect.tga");
+				screenshot(8, "v_rt_reflect.png");
 				
 				paused = false;
-
 				taking_screenshot = false;
 
 				break;
@@ -280,7 +280,7 @@ public:
 		const unsigned long int size_x = width;
 		const unsigned long int size_y = height;
 
-		glm::mat4x4 cam_mat = camera.matrices.perspective;
+		const glm::mat4x4 cam_mat = camera.matrices.perspective;
 
 		VkDeviceSize size = size_x * size_y * 4; // 4 bytes per pixel
 
@@ -311,17 +311,18 @@ public:
 
 		const size_t total_cams = num_cams_wide * num_cams_wide;
 
-		// Loop through subcameras.
+		// Loop through subcameras
+		// We break the screenshot up into pieces like this, so that we don't
+		// hang the GPU for too long at one time
 		for (size_t cam_num_x = 0; cam_num_x < num_cams_wide; cam_num_x++)
 		{
 			for (size_t cam_num_y = 0; cam_num_y < num_cams_wide; cam_num_y++)
 			{
-				const float pi = 4.0 * atan(1.0);
-				const float near_plane = 0.01;
-				const float far_plane = 1000.0;
-				const float deg_to_rad = (1.0 / 360.0) * 2 * pi;
+				static const float pi = 4.0 * atan(1.0);
+				static const float deg_to_rad = (1.0 / 360.0) * 2 * pi;
+
 				const float aspect = static_cast<float>(size_x) / static_cast<float>(size_y);
-				const float tangent = tan((45.0 / 2.0) * deg_to_rad);
+				const float tangent = tan((fov / 2.0) * deg_to_rad);
 				const float h = near_plane * tangent; // Half height of near_plane plane.
 				const float w = h * aspect; // Half width of near_plane plane.
 
@@ -422,7 +423,7 @@ public:
 			}
 		}
 
-		int result = stbi_write_png("v_rt_reflect.png", px, py, 4, &pixel_data[0], 0);
+		int result = stbi_write_png(filename, px, py, 4, &pixel_data[0], 0);
 
 
 		camera.matrices.perspective = cam_mat;
@@ -560,7 +561,7 @@ public:
 		//timerSpeed *= 0.5f;
 		//camera.rotationSpeed *= 0.25f;
 		camera.type = Camera::CameraType::lookat;
-		camera.setPerspective(45.0f, (float)width / (float)height, 0.001f, 10000.0f);
+		camera.setPerspective(fov, (float)width / (float)height, near_plane, far_plane);
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		camera.setTranslation(glm::vec3(0.0f, 0.0f, -6.0));
 		enableExtensions();
@@ -1011,17 +1012,6 @@ public:
 		createShaderBindingTables();
 		createDescriptorSets();
 		buildCommandBuffers();
-
-
-
-		VkFenceCreateInfo fenceCreateInfo = {};
-		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceCreateInfo.pNext = nullptr;
-
-		//we want to create the fence with the Create Signaled flag, so we can wait on it before using it on a GPU command (for the first frame)
-		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-		vkCreateFence(device, &fenceCreateInfo, nullptr, &fence);
 
 		prepared = true;
 	}
