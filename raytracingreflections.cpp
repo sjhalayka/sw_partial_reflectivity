@@ -41,7 +41,7 @@ public:
 
 				paused = true;
 
-				screenshot(4, "v_rt_reflect.tga");
+				screenshot(8, "v_rt_reflect.tga");
 				
 				paused = false;
 
@@ -338,8 +338,7 @@ public:
 				camera.matrices.perspective = glm::frustum(left, right, bottom, top, near_plane, far_plane);
 				updateUniformBuffers();
 
-
-		// Prepare & flush command buffer
+				// Prepare & flush command buffer
 				{
 					VkCommandBuffer screenshotCmdBuffer = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
@@ -401,7 +400,6 @@ public:
 						0, nullptr
 					);
 
-
 					vulkanDevice->flushCommandBuffer(screenshotCmdBuffer, queue);
 
 					memcpy(&fbpixels[0], screenshotStagingBuffer.mapped, size);
@@ -426,9 +424,9 @@ public:
 
 				cam_count++;
 			}
-
-			int result = stbi_write_png("v_rt_reflect.png", px, py, 4, &pixel_data[0], 0);
 		}
+
+		int result = stbi_write_png("v_rt_reflect.png", px, py, 4, &pixel_data[0], 0);
 
 
 		camera.matrices.perspective = cam_mat;
