@@ -1,6 +1,6 @@
 Based off of Sascha Willems' raytracingreflections demo code.
 
-![image](https://github.com/sjhalayka/sw_partial_reflectivity/assets/16404554/5e52bddc-5fab-4dee-bfad-5e8823bfefe2)
+![image](https://github.com/sjhalayka/sw_partial_reflectivity/assets/16404554/9e81e3f3-5447-4c69-927b-011a24adb79e)
 
 Supports:
 - Reflection and refraction (Fresnel)
@@ -10,7 +10,7 @@ Supports:
 - Fast glossy (noisy) reflections
 - Fast blurry (noisy) shadow edges
 - Volumetric fog via ray marching/tracing
-- Large-format screenshots (may require a TDR time extension):
+- Large-format screenshots (may require a TDR time extension, if your framerate dips below 1 FPS, like on my 3060):
 
 KeyPath   : HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\GraphicsDrivers<br>
 KeyValue  : TdrDelay<br>
