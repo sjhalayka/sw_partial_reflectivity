@@ -28,7 +28,7 @@ public:
 
 	bool taking_screenshot = false;
 	
-	const float fov = 45.0;
+	const float fovy = 45.0;
 	const float near_plane = 0.01;
 	const float far_plane = 1000.0;
 
@@ -42,7 +42,7 @@ public:
 				taking_screenshot = true;
 				paused = true;
 
-				screenshot(8, "v_rt_reflect.png");
+				screenshot(2, "v_rt_reflect.png");
 				
 				paused = false;
 				taking_screenshot = false;
@@ -322,7 +322,7 @@ public:
 				static const float deg_to_rad = (1.0 / 360.0) * 2 * pi;
 
 				const float aspect = static_cast<float>(size_x) / static_cast<float>(size_y);
-				const float tangent = tan((fov / 2.0) * deg_to_rad);
+				const float tangent = tan((fovy / 2.0) * deg_to_rad);
 				const float h = near_plane * tangent; // Half height of near_plane plane.
 				const float w = h * aspect; // Half width of near_plane plane.
 
@@ -561,7 +561,7 @@ public:
 		//timerSpeed *= 0.5f;
 		//camera.rotationSpeed *= 0.25f;
 		camera.type = Camera::CameraType::lookat;
-		camera.setPerspective(fov, (float)width / (float)height, near_plane, far_plane);
+		camera.setPerspective(fovy, (float)width / (float)height, near_plane, far_plane);
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		camera.setTranslation(glm::vec3(0.0f, 0.0f, -6.0));
 		enableExtensions();

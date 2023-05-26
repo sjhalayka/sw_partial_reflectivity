@@ -181,13 +181,12 @@ vec4 get_pseudorandom_sample(vec3 pos)
 
 vec4 get_fractal_sample(vec3 pos)
 {
-	float x = 1.0 - clamp(iterate(vec4(pos, z_w)) / threshold, 0.0, 1.0);
+	float x = iterate(vec4(pos, z_w)) / threshold;
 
-	if(x >= 1)
-		x = 0.0;
+	if(x >= 1.0)
+		x = 0.01;//1;
 	else
 		x = 1.0;
-
 
 	return vec4(x, x, x, x);
 
@@ -198,7 +197,7 @@ vec4 get_fractal_sample(vec3 pos)
 vec4 get_sample(vec3 pos)
 {
 // Get 3D texture coords from pos and aabb_min and aabb_max
-	//return get_fractal_sample(pos)*0.01;
+	//return get_fractal_sample(pos);
 
 	return vec4(0.01); // fog, for now.
 }
@@ -390,8 +389,8 @@ float get_ray0(const int channel, const float eta)
 								}
 								else
 								{
-									light_color = 0.0;
-									light_opacity = 0.0;
+									light_color = 1.0;
+									light_opacity = 1.0;
 								}
 
 								// Apply lighting
@@ -402,12 +401,15 @@ float get_ray0(const int channel, const float eta)
 								else
 									light_color *= ubo.light_colors[k].b;
 
+								light_color = clamp(light_color, 0.0, 1.0);
+								light_opacity = clamp(light_opacity, 0.0, 1.0);
+
 								lights_color += light_color;
 								lights_opacity += light_opacity;
 							}
 
-							//lights_color = clamp(lights_color, 0.0, 1.0);
-							//lights_opacity = clamp(lights_opacity, 0.0, 1.0);
+							lights_color = clamp(lights_color, 0.0, 1.0);
+							lights_opacity = clamp(lights_opacity, 0.0, 1.0);
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 							dist_color += trans * lights_color;
@@ -442,6 +444,13 @@ float get_ray0(const int channel, const float eta)
 					rays[i].in_use = false;
 					continue;
 				}
+
+
+
+
+
+
+
 
 				// entering mesh
 				if(dot(rays[i].direction.xyz, rayPayload.normal) <= 0.0)
