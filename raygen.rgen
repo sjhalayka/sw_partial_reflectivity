@@ -184,9 +184,9 @@ vec4 get_fractal_sample(vec3 pos)
 	float x = 1.0 - clamp(iterate(vec4(pos, z_w)) / threshold, 0.0, 1.0);
 
 	if(x < 0.5)
-		x = 0.01;//1;
+		x = 0.01;
 	else
-		x = 0.0001;
+		x = 0.1;
 
 	return vec4(x, x, x, x);
 
