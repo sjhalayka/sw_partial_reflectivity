@@ -408,8 +408,8 @@ float get_ray0(const int channel, const float eta)
 								lights_opacity += light_opacity;
 							}
 
-							lights_color = clamp(lights_color, 0.0, 1.0);
-							lights_opacity = clamp(lights_opacity, 0.0, 1.0);
+							//lights_color = clamp(lights_color, 0.0, 1.0);
+							//lights_opacity = clamp(lights_opacity, 0.0, 1.0);
 
 							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 							dist_color += trans * lights_color;
