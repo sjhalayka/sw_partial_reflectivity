@@ -197,9 +197,9 @@ vec4 get_fractal_sample(vec3 pos)
 vec4 get_sample(vec3 pos)
 {
 // Get 3D texture coords from pos and aabb_min and aabb_max
-	return get_fractal_sample(pos);
+	//return get_fractal_sample(pos);
 
-	//return vec4(0.01); // fog, for now.
+	return vec4(0.01); // fog, for now.
 }
 
 
