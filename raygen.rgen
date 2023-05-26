@@ -127,7 +127,7 @@ const int buffer_size = 32;
 vec3 aabb_min = vec3(-2.5, -2.5, -2.5);
 vec3 aabb_max = vec3(2.5, 2.5, 2.5);
 
-const float opacity_factor = 0.025;
+
 
 
  const vec4 C = vec4(0.3, 0.5, 0.4, 0.2);
@@ -181,22 +181,25 @@ vec4 get_pseudorandom_sample(vec3 pos)
 
 vec4 get_fractal_sample(vec3 pos)
 {
-	float x = iterate(vec4(pos, z_w));
+	float x = 1.0 - clamp(iterate(vec4(pos, z_w)) / threshold, 0.0, 1.0);
 
-	if(x < threshold)
-		x = 0.0;
+	if(x < 0.5)
+		x = 0.01;
 	else
-		x = 1.0;
+		x = 0.1;
 
 	return vec4(x, x, x, x);
+
+
+	///return vec4(1.0); // fog, for now.
 }
 
 vec4 get_sample(vec3 pos)
 {
 // Get 3D texture coords from pos and aabb_min and aabb_max
-	return get_fractal_sample(pos);
+	//return get_fractal_sample(pos);
 
-	//return vec4(1.0); // fog, for now.
+	return vec4(0.01); // fog, for now.
 }
 
 
@@ -350,9 +353,9 @@ float get_ray0(const int channel, const float eta)
 							for(int k = 0; k < max_lights; k++)
 							{
 								float light_color = 1.0;
-								float light_opacity = 1.0;
+								float light_opacity = 0.0;
 
-								float s = get_sample(curr_step).r*opacity_factor;
+								float s = get_sample(curr_step).r;
 
 								if(s != 0.0)
 								{
@@ -378,8 +381,8 @@ float get_ray0(const int channel, const float eta)
 											if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 												break;
 
-											light_color -= get_sample(light_curr_step).r*opacity_factor;
-											light_opacity -= get_sample(light_curr_step).r*opacity_factor;
+											light_color -= get_sample(light_curr_step).r;
+											light_opacity += s;
 										}
 
 									}
@@ -390,11 +393,8 @@ float get_ray0(const int channel, const float eta)
 									light_opacity = 1.0;
 								}
 
-								if(light_color < 0)
-									light_color = 0.0;
-
-								if(light_opacity > 1)
-									light_opacity = 1;
+								light_color = clamp(light_color, 0.0, 1.0);
+								light_opacity = clamp(light_opacity, 0.0, 1.0);
 
 								// Apply lighting
 								if(channel == red_channel)
@@ -404,10 +404,13 @@ float get_ray0(const int channel, const float eta)
 								else
 									light_color *= ubo.light_colors[k].b;
 
-								float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
-								dist_color += trans * light_color;
-								dist_opacity += trans * opacity_factor * light_opacity;
+								lights_color += light_color;
+								lights_opacity += light_opacity;
 							}
+
+							float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
+							dist_color += trans * lights_color;
+							dist_opacity += trans * 0.025 * (1.0 - lights_opacity);
 						}
 					}
 				}

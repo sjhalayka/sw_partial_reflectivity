@@ -42,7 +42,7 @@ public:
 				taking_screenshot = true;
 				paused = true;
 
-				screenshot(2, "v_rt_reflect.png");
+				screenshot(4, "v_rt_reflect.png");
 				
 				paused = false;
 				taking_screenshot = false;
@@ -318,11 +318,11 @@ public:
 		{
 			for (size_t cam_num_y = 0; cam_num_y < num_cams_wide; cam_num_y++)
 			{
-				static const float pi = 4.0 * atan(1.0);
-				static const float deg_to_rad = (1.0 / 360.0) * 2 * pi;
+				static const float pi = 4.0f * atanf(1.0f);
+				static const float deg_to_rad = (1.0f / 360.0f) * 2.0f * pi;
 
 				const float aspect = static_cast<float>(size_x) / static_cast<float>(size_y);
-				const float tangent = tan((fovy / 2.0) * deg_to_rad);
+				const float tangent = tan((fovy / 2.0f) * deg_to_rad);
 				const float h = near_plane * tangent; // Half height of near_plane plane.
 				const float w = h * aspect; // Half width of near_plane plane.
 
