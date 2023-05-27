@@ -596,6 +596,8 @@ float get_ray0(const int channel, const float eta)
 }
 
 
+ 
+
 
 void main() 
 {
