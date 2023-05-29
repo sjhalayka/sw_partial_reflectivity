@@ -348,11 +348,7 @@ float get_ray0(const int channel, const float eta)
 							{
 								float light_opacity = 0.0;
 
-								float s = get_sample(curr_step).r*opacity_factor;
-
-								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
-
-								if(shadow)
+								if(get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0))
 								{
 									light_opacity = -1.0;
 								}
