@@ -181,12 +181,12 @@ vec4 get_pseudorandom_sample(vec3 pos)
 
 vec4 get_fractal_sample(vec3 pos)
 {
-	float x = iterate(vec4(pos, z_w));
+	float x = iterate(vec4(pos, z_w)) / threshold;
 
-	if(x < threshold)
-		x = threshold;
-	else
+	if(x < 1.0)
 		x = 0.0;
+	else
+		x = 1.0;
 
 	return vec4(x, x, x, x);
 }

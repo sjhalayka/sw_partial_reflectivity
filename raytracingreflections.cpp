@@ -28,9 +28,9 @@ public:
 
 	bool taking_screenshot = false;
 	
-	const float fovy = 45.0;
-	const float near_plane = 0.01;
-	const float far_plane = 1000.0;
+	const float fovy = 45.0f;
+	const float near_plane = 0.01f;
+	const float far_plane = 1000.0f;
 
 
 	virtual void keyPressed(uint32_t keyCode)
@@ -42,7 +42,7 @@ public:
 				taking_screenshot = true;
 				paused = true;
 
-				screenshot(4, "v_rt_reflect.png");
+				screenshot(8, "v_rt_reflect.png");
 				
 				paused = false;
 				taking_screenshot = false;
