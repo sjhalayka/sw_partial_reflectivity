@@ -346,7 +346,6 @@ float get_ray0(const int channel, const float eta)
 
 							for(int k = 0; k < max_lights; k++)
 							{
-								float light_color = 0.0;
 								float light_opacity = 0.0;
 
 								float s = get_sample(curr_step).r*opacity_factor;
@@ -355,12 +354,10 @@ float get_ray0(const int channel, const float eta)
 
 								if(shadow)
 								{
-									light_color = 0.0;
 									light_opacity = -1.0;
 								}
 								else
 								{
-									light_color = 1.0;
 									light_opacity = 1.0;
 
 									const vec3 light_steps_start = curr_step;
@@ -376,20 +373,19 @@ float get_ray0(const int channel, const float eta)
 										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
 											break;
 
-										light_color -= get_sample(light_curr_step).r*opacity_factor;
 										light_opacity -= get_sample(light_curr_step).r*opacity_factor;
 									}
 								}
 
+								float light_color = 0.0;
+
 								// Apply lighting
 								if(channel == red_channel)
-									light_color *= ubo.light_colors[k].r;
+									light_color = ubo.light_colors[k].r;
 								else if(channel == green_channel)
-									light_color *= ubo.light_colors[k].g;
+									light_color = ubo.light_colors[k].g;
 								else
-									light_color *= ubo.light_colors[k].b;
-
-								light_color = abs(light_color);
+									light_color = ubo.light_colors[k].b;
 
 								float trans = 1.0 - clamp(dist_opacity, 0.0, 1.0);
 								dist_color += trans * light_color;
