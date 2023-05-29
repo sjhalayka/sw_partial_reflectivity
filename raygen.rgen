@@ -194,9 +194,9 @@ vec4 get_fractal_sample(vec3 pos)
 vec4 get_sample(vec3 pos)
 {
 // Get 3D texture coords from pos and aabb_min and aabb_max
-	//return get_fractal_sample(pos);
+	return get_fractal_sample(pos);
 
-	return vec4(1.0); // fog, for now.
+	//return vec4(1.0); // fog, for now.
 }
 
 
@@ -344,56 +344,42 @@ float get_ray0(const int channel, const float eta)
 							if(false == in_aabb(curr_step, aabb_min, aabb_max))
 								continue;
 
-							float lights_color = 0.0;
-							float lights_opacity = 0.0;
-
 							for(int k = 0; k < max_lights; k++)
 							{
-								float light_color = 1.0;
-								float light_opacity = 1.0;
+								float light_color = 0.0;
+								float light_opacity = 0.0;
 
 								float s = get_sample(curr_step).r*opacity_factor;
 
-								if(true)// != 0.0)
-								{
-									bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
+								bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
-									if(shadow)
-									{
-										light_color = 0.0;
-										light_opacity = -1.0;
-									}
-									else
-									{
-										const vec3 light_steps_start = curr_step;
-										const vec3 light_steps_end = ubo.light_positions[k].xyz;
-										const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
-										const vec3 light_step = (light_steps_end - light_steps_start)/float(light_num_steps);
-									
-										vec3 light_curr_step = light_steps_start;
-
-										for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step)
-										{
-											// If stepped outside of the AABB then abort early
-											if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
-												break;
-
-											light_color -= get_sample(light_curr_step).r*opacity_factor;
-											light_opacity -= get_sample(light_curr_step).r*opacity_factor;
-										}
-									}
-								}
-								else
+								if(shadow)
 								{
 									light_color = 0.0;
 									light_opacity = -1.0;
 								}
+								else
+								{
+									light_color = 1.0;
+									light_opacity = 1.0;
 
-								if(light_color < 0)
-									light_color = 0.0;
+									const vec3 light_steps_start = curr_step;
+									const vec3 light_steps_end = ubo.light_positions[k].xyz;
+									const float light_num_steps = floor(distance(light_steps_start, light_steps_end) / target_step_length);
+									const vec3 light_step = (light_steps_end - light_steps_start)/float(light_num_steps);
+									
+									vec3 light_curr_step = light_steps_start;
 
-	//							if(light_opacity < 0)
-		//							light_opacity = 0;
+									for(float l = 0.0; l < light_num_steps; l += 1.0, light_curr_step += light_step)
+									{
+										// If stepped outside of the AABB then abort early
+										if(false == in_aabb(light_curr_step, aabb_min, aabb_max))
+											break;
+
+										light_color -= get_sample(light_curr_step).r*opacity_factor;
+										light_opacity -= get_sample(light_curr_step).r*opacity_factor;
+									}
+								}
 
 								// Apply lighting
 								if(channel == red_channel)
