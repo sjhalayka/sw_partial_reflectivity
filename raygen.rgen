@@ -401,6 +401,7 @@ float get_ray0(const int channel, const float eta)
 
 				rays[i].normal = rayPayload.normal;
 
+				// Mix in fog
 				if(channel == red_channel)
 					rays[i].base_color = mix(rayPayload.color.r, clamp(dist_color, 0.0, 1.0), clamp(dist_opacity, 0.0, 1.0));
 				else if(channel == green_channel)

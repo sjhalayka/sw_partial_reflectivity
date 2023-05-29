@@ -26,12 +26,11 @@ public:
 	AccelerationStructure bottomLevelAS{};
 	AccelerationStructure topLevelAS{};
 
-	bool taking_screenshot = false;
-	
 	const float fovy = 45.0f;
 	const float near_plane = 0.01f;
 	const float far_plane = 1000.0f;
-
+	const float pi = 4.0f * atanf(1.0f);
+	const float deg_to_rad = (1.0f / 360.0f) * 2.0f * pi;
 
 	virtual void keyPressed(uint32_t keyCode)
 	{
@@ -39,13 +38,11 @@ public:
 		{
 			case KEY_SPACE:
 			{
-				taking_screenshot = true;
 				paused = true;
 
-				screenshot(8, "v_rt_reflect.png");
+				screenshot(4, "v_rt_reflect.png");
 				
 				paused = false;
-				taking_screenshot = false;
 
 				break;
 			}
@@ -318,9 +315,6 @@ public:
 		{
 			for (size_t cam_num_y = 0; cam_num_y < num_cams_wide; cam_num_y++)
 			{
-				static const float pi = 4.0f * atanf(1.0f);
-				static const float deg_to_rad = (1.0f / 360.0f) * 2.0f * pi;
-
 				const float aspect = static_cast<float>(size_x) / static_cast<float>(size_y);
 				const float tangent = tan((fovy / 2.0f) * deg_to_rad);
 				const float h = near_plane * tangent; // Half height of near_plane plane.
