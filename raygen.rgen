@@ -354,14 +354,14 @@ float get_ray0(const int channel, const float eta)
 
 								float s = get_sample(curr_step).r*opacity_factor;
 
-								if(s != 0.0)
+								if(true)// != 0.0)
 								{
 									bool shadow = get_shadow(curr_step, rayPayload.wrd, rayPayload.hitt, ubo.light_positions[k].xyz, rayPayload.normal, 1.0);
 
 									if(shadow)
 									{
 										light_color = 0.0;
-										light_opacity = 0.0;
+										light_opacity = -1.0;
 									}
 									else
 									{
@@ -386,14 +386,14 @@ float get_ray0(const int channel, const float eta)
 								else
 								{
 									light_color = 0.0;
-									light_opacity = 0.0;
+									light_opacity = -1.0;
 								}
 
 								if(light_color < 0)
 									light_color = 0.0;
 
-								if(light_opacity > 1)
-									light_opacity = 1;
+	//							if(light_opacity < 0)
+		//							light_opacity = 0;
 
 								// Apply lighting
 								if(channel == red_channel)
