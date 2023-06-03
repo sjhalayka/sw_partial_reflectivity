@@ -207,7 +207,7 @@ float get_caustic_float(const vec3 light_pos, const vec3 normal, float caustic_s
 	// Restore the payload after we've traced some rays
 	rayPayload = r;
 
-	return caustic;
+	return clamp(caustic, 0, 1);
 }
 
 
@@ -296,7 +296,7 @@ float get_shadow_float(const vec3 light_pos, const vec3 normal, float shadow_sha
 	// Restore the payload after we've traced some rays
 	rayPayload = r;
 
-	return shadow;
+	return clamp(shadow, 0, 1);
 }
 
 
@@ -325,7 +325,7 @@ void main()
 	vec4 n = ubo.transformation_matrix*vec4(normal, 0.0);
 	
 	rayPayload.reflector = 0.75;
-	rayPayload.opacity = pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
+	rayPayload.opacity = 0.1;//pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
 
 	vec3 color = texture(baseColorSampler, uv).rgb;
 
