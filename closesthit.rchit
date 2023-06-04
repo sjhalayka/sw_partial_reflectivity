@@ -207,7 +207,7 @@ float get_caustic_float(const vec3 light_pos, const vec3 normal, float caustic_s
 	// Restore the payload after we've traced some rays
 	rayPayload = r;
 
-	return clamp(caustic, 0, 1);
+	return caustic;
 }
 
 
@@ -296,7 +296,7 @@ float get_shadow_float(const vec3 light_pos, const vec3 normal, float shadow_sha
 	// Restore the payload after we've traced some rays
 	rayPayload = r;
 
-	return clamp(shadow, 0, 1);
+	return shadow;
 }
 
 
@@ -325,7 +325,7 @@ void main()
 	vec4 n = ubo.transformation_matrix*vec4(normal, 0.0);
 	
 	rayPayload.reflector = 0.75;
-	rayPayload.opacity = 0.1;//pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
+	rayPayload.opacity = 0.5;// pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
 
 	vec3 color = texture(baseColorSampler, uv).rgb;
 
@@ -350,7 +350,7 @@ void main()
 			float c = get_caustic_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);
 
 			rayPayload.color += s*phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
-			//rayPayload.color += c*phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);;
+			rayPayload.color += c*0.5;//phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);;
 		}
 	}
 }
