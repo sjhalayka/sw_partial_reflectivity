@@ -200,14 +200,13 @@ float get_caustic_float(const vec3 light_pos, const vec3 normal, float caustic_s
 				caustic = rating;
 				first_assignment = false;
 			}
-
 		}
 	}
 
 	// Restore the payload after we've traced some rays
 	rayPayload = r;
 
-	return caustic;
+	return caustic;//clamp(caustic, 0.0, 1.0);
 }
 
 
@@ -267,7 +266,6 @@ float get_shadow_float(const vec3 light_pos, const vec3 normal, float shadow_sha
 
 			traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, biased_origin, 0.001, lightVector, 10000.0, 0);
 
-
 			if(rayPayload.distance == -1)
 				break;
 
@@ -296,7 +294,7 @@ float get_shadow_float(const vec3 light_pos, const vec3 normal, float shadow_sha
 	// Restore the payload after we've traced some rays
 	rayPayload = r;
 
-	return shadow;
+	return shadow;//clamp(shadow, 0.0, 1.0);
 }
 
 
@@ -325,7 +323,7 @@ void main()
 	vec4 n = ubo.transformation_matrix*vec4(normal, 0.0);
 	
 	rayPayload.reflector = 0.75;
-	rayPayload.opacity = 0.5;// pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
+	rayPayload.opacity = pow(length(texture(normalSampler, uv).rgb) / sqrt(3.0), 1.0);
 
 	vec3 color = texture(baseColorSampler, uv).rgb;
 
@@ -338,19 +336,16 @@ void main()
 	rayPayload.hitt = gl_HitTEXT;
 
 	rayPayload.color = vec3(0, 0, 0);
-
-
-
 	
 	if(rayPayload.depth != 1)
 	{
 		for (int i = 0; i < max_lights; i++)
 		{
 			float s = get_shadow_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);	
-			float c = get_caustic_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);
+			//float c = get_caustic_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);
 
 			rayPayload.color += s*phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
-			rayPayload.color += c*0.5;//phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);;
+		//	rayPayload.color += c*0.125;//phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);;
 		}
 	}
 }
