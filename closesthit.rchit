@@ -14,7 +14,7 @@ struct RayPayload {
 	vec3 wro;
 	vec3 wrd;
 	float hitt;
-	int depth;
+	double depth;
 };
 
 layout(location = 0) rayPayloadInEXT RayPayload rayPayload;
@@ -188,10 +188,7 @@ float get_caustic_float(const vec3 light_pos, const vec3 normal, float caustic_s
 			float first_dot = dot(normalize(lightVector), normalize(rayPayload.normal));
 			float first_opacity = rayPayload.opacity;
 
-			if(first_opacity == 0.0)
-				first_opacity = 1e-5;
-
-			float rating = (abs(first_dot))/first_opacity;
+			float rating = abs(first_dot);
 
 			rating = mix(rating, 0, first_opacity);
 
@@ -274,10 +271,7 @@ float get_shadow_float(const vec3 light_pos, const vec3 normal, float shadow_sha
 			float first_dot = dot(normalize(lightVector), normalize(rayPayload.normal));
 			float first_opacity = rayPayload.opacity;
 
-			if(first_opacity == 0.0)
-				first_opacity = 1e-5;
-
-			float rating = (1 - abs(first_dot))/first_opacity;
+			float rating = 1.0 - abs(first_dot);
 
 			rating = mix(rating, 1, first_opacity);
 
@@ -342,10 +336,10 @@ void main()
 		for (int i = 0; i < max_lights; i++)
 		{
 			float s = get_shadow_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);	
-			//float c = get_caustic_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);
+			float c = get_caustic_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);
 
 			rayPayload.color += s*phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
-		//	rayPayload.color += c*0.125;//phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);;
+			rayPayload.color += c;
 		}
 	}
 }

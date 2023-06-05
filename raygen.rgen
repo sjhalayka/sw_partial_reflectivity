@@ -75,7 +75,7 @@ struct RayPayload {
 	vec3 wro;
 	vec3 wrd;
 	float hitt;
-	bool depth;
+	double depth;
 };
 
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
