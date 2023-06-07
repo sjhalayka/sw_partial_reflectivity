@@ -339,7 +339,7 @@ void main()
 			float c = get_caustic_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);
 
 			rayPayload.color += s*phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
-			rayPayload.color += c;
+			rayPayload.color += c*ubo.light_colors[i].rgb;
 		}
 	}
 }
