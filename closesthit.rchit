@@ -176,6 +176,14 @@ float get_caustic_float(const vec3 light_pos, const vec3 normal, float caustic_s
 
 		while(true)
 		{
+			// Set the depth so that the recursively-called closest hit shader does not
+			// form an infinite loop
+			//
+			// Note: This relies on the depth member not being initialized, containing
+			// random values. As such, there is a 1 in 2^64 chance that this will not
+			// work, producing a black pixel. If that's not good enough for your standards,
+			// then use a dvec4 or dmat4x4 to further decrease the odds of a black pixel
+
 			rayPayload.depth = 1;
 
 			traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, biased_origin, 0.001, lightVector, 10000.0, 0);
@@ -259,6 +267,14 @@ float get_shadow_float(const vec3 light_pos, const vec3 normal, float shadow_sha
 
 		while(true)
 		{
+			// Set the depth so that the recursively-called closest hit shader does not
+			// form an infinite loop
+			//
+			// Note: This relies on the depth member not being initialized, containing
+			// random values. As such, there is a 1 in 2^64 chance that this will not
+			// work, producing a black pixel. If that's not good enough for your standards,
+			// then use a dvec4 or dmat4x4 to further decrease the odds of a black pixel 
+
 			rayPayload.depth = 1;
 
 			traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, biased_origin, 0.001, lightVector, 10000.0, 0);
