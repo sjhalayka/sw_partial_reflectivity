@@ -75,7 +75,7 @@ struct RayPayload {
 	vec3 wro;
 	vec3 wrd;
 	float hitt;
-	double depth;
+	bool recursive;
 };
 
 layout(location = 0) rayPayloadEXT RayPayload rayPayload;
@@ -582,6 +582,9 @@ float get_ray0(const int channel, const float eta)
 
 void main() 
 {
+	// https://github.com/brunosegiu/vk-rt/blob/main/shaders/raytrace.rgen
+	rayPayload.recursive = false;
+
 	// Calculate chromatic aberration
 
 	prng_state = res.x * pixel_pos.y + pixel_pos.x;
