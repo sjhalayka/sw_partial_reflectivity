@@ -582,17 +582,18 @@ float get_ray0(const int channel, const float eta)
 
 void main() 
 {
-	// https://github.com/brunosegiu/vk-rt/blob/main/shaders/raytrace.rgen
-	rayPayload.recursive = false;
-
 	// Calculate chromatic aberration
 
+	// https://github.com/brunosegiu/vk-rt/blob/main/shaders/raytrace.rgen
+	rayPayload.recursive = false;
 	prng_state = res.x * pixel_pos.y + pixel_pos.x;
 	const float red = get_ray0(red_channel, red_eta);
-	
+
+	rayPayload.recursive = false;
 	prng_state = res.x * pixel_pos.y + pixel_pos.x;
 	const float green = get_ray0(green_channel, green_eta);
 	
+	rayPayload.recursive = false;
 	prng_state = res.x * pixel_pos.y + pixel_pos.x;
 	const float blue = get_ray0(blue_channel, blue_eta);
 
