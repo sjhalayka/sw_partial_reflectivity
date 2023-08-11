@@ -14,7 +14,7 @@ using std::ios;
 using std::mutex;
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include <stb_image_write.h>
 
 
 // https://manual.notch.one/0.9.23/en/docs/faq/extending-gpu-timeout-detection/
@@ -579,7 +579,7 @@ public:
 	/*
 		Create the bottom level acceleration structure contains the scene's actual geometry (vertices, triangles)
 	*/
-	void createBottomLevelAccelerationStructure()
+	void createBottomLevelAccelerationStructure(bool do_init = true)
 	{
 		// Instead of a simple triangle, we'll be loading a more complex scene for this example
 		// The shaders are accessing the vertex and index buffers of the scene, so the proper usage flag has to be set on the vertex and index buffers for the scene
@@ -591,7 +591,8 @@ public:
 
 		// This fractal_500.gltf file can be downloaded from:
 		// https://drive.google.com/file/d/1BJJSC_K8NwaH8kP4tQpxlAmc6h6N3Ii1/view
-		scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
+		if(do_init)
+			scene.loadFromFile("C:/temp/hires/fractal_500.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
 		//scene.loadFromFile("C:/temp/cyl_tex/cylinder.gltf", vulkanDevice, queue, glTFLoadingFlags);
 
@@ -636,7 +637,8 @@ public:
 			&numTriangles,
 			&accelerationStructureBuildSizesInfo);
 
-		createAccelerationStructure(bottomLevelAS, VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR, accelerationStructureBuildSizesInfo);
+		if (do_init)
+			createAccelerationStructure(bottomLevelAS, VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR, accelerationStructureBuildSizesInfo);
 
 		// Create a small scratch buffer used during build of the bottom level acceleration structure
 		ScratchBuffer scratchBuffer = createScratchBuffer(accelerationStructureBuildSizesInfo.buildScratchSize);
@@ -676,17 +678,17 @@ public:
 	/*
 		The top level acceleration structure contains the scene's object instances
 	*/
-	void createTopLevelAccelerationStructure()
+	void createTopLevelAccelerationStructure(bool do_init = true)
 	{
-		//static const float pi = 4.0f * atanf(1.0f);
-		//float duration = (std::clock() - start) / (float) CLOCKS_PER_SEC;
-		//float radians = duration * 2.0f * pi * 0.05f;
+		static const float pi = 4.0f * atanf(1.0f);
+		float duration = (std::clock() - start) / (float) CLOCKS_PER_SEC;
+		float radians = duration * 2.0f * pi * 0.05f;
 
 		//// Rotate on y axis
-		//transformMatrix = {
-		//	cos(radians), 0.0f, -sin(radians), 0.0f,
-		//	0.0f,         1.0f,  0.0f,         0.0f,
-		//	sin(radians), 0.0f,  cos(radians), 0.0f };
+		transformMatrix = {
+			cos(radians), 0.0f, -sin(radians), 0.0f,
+			0.0f,         1.0f,  0.0f,         0.0f,
+			sin(radians), 0.0f,  cos(radians), 0.0f };
 
 		VkAccelerationStructureInstanceKHR instance{};
 		instance.transform = transformMatrix;
@@ -732,7 +734,9 @@ public:
 			&primitive_count,
 			&accelerationStructureBuildSizesInfo);
 
-		createAccelerationStructure(topLevelAS, VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR, accelerationStructureBuildSizesInfo);
+
+		if(do_init)
+			createAccelerationStructure(topLevelAS, VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR, accelerationStructureBuildSizesInfo);
 
 		// Create a small scratch buffer used during build of the top level acceleration structure
 		ScratchBuffer scratchBuffer = createScratchBuffer(accelerationStructureBuildSizesInfo.buildScratchSize);
@@ -1031,8 +1035,11 @@ public:
 		// deleting and recreating it
 		// see: https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/raytracing_extended
 		// Note: this causes a bug which locks the app if window becomes non-minimized
+
 		//deleteAccelerationStructure(topLevelAS);
-		//createTopLevelAccelerationStructure();
+		//deleteAccelerationStructure(bottomLevelAS);
+		createBottomLevelAccelerationStructure(false);
+		createTopLevelAccelerationStructure(false);
 
 		draw();
 
