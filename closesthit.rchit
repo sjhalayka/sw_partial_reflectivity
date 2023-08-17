@@ -125,123 +125,12 @@ float stepAndOutputRNGFloat(inout uint rngState)
 
 
 
-
-
-
-
-float get_caustic_float(const vec3 light_pos, const vec3 normal, float caustic_sharpness)
+float get_shadow_float(const vec3 light_pos, const vec3 normal)
 {
 	// Back up the payload before we trace some rays
 	RayPayload r = rayPayload;
 
 	vec3 lightVector = normalize(light_pos);
-
-	// Pseudorandomize the direction of the light
-	// in order to get blurry caustics
-	vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
-
-	// Stick to the correct hemisphere
-	if(dot(rdir, lightVector) < 0.0)
-		rdir = -rdir;
-	
-	// Keep the caustics stay dynamic to some degree
-	// I mean, how blurry do you really need the edges to be?
-	if(caustic_sharpness < 0.5)
-		caustic_sharpness = 0.5;
-
-
-	lightVector = mix(rdir, lightVector, caustic_sharpness);
-
-	float caustic = 0.0;
-
-	vec3 first_origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
-	vec3 first_biased_origin = first_origin + normal * 0.01;
-
-	vec3 origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
-	vec3 biased_origin = origin + normal * 0.01;
-
-	if(dot(normal, lightVector) < 0.0)
-	{
-		caustic = 0.0;
-	}
-	else
-	{
-		// caustic casting
-		origin = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
-		biased_origin = origin + normal * 0.01;
-
-		caustic = 0.0;
-
-		bool first_assignment = true;
-
-		while(true)
-		{
-			// Set the depth so that the recursively-called closest hit shader does not
-			// form an infinite loop
-			//
-			// Note: This relies on the depth member not being initialized, containing
-			// random values. As such, there is a 1 in 2^64 chance that this will not
-			// work, producing a black pixel. If that's not good enough for your standards,
-			// then use a dvec4 or dmat4x4 to further decrease the odds of a black pixel
-
-			rayPayload.recursive = true;
-
-			traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, biased_origin, 0.001, lightVector, 10000.0, 0);
-
-			if(rayPayload.distance == -1)
-				break;
-
-			biased_origin = biased_origin + lightVector*0.01;				
-
-			float first_dot = dot(normalize(lightVector), normalize(rayPayload.normal));
-			float first_opacity = rayPayload.opacity;
-
-			float rating = abs(first_dot);
-
-			rating = mix(rating, 0, first_opacity);
-
-			if(first_assignment || rating > caustic)
-			{
-				caustic = rating;
-				first_assignment = false;
-			}
-		}
-	}
-
-	// Restore the payload after we've traced some rays
-	rayPayload = r;
-
-	return caustic;//clamp(caustic, 0.0, 1.0);
-}
-
-
-
-
-
-
-
-
-float get_shadow_float(const vec3 light_pos, const vec3 normal, float shadow_sharpness)
-{
-	// Back up the payload before we trace some rays
-	RayPayload r = rayPayload;
-
-	vec3 lightVector = normalize(light_pos);
-
-	// Pseudorandomize the direction of the light
-	// in order to get blurry shadows
-	vec3 rdir = normalize(vec3(stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state), stepAndOutputRNGFloat(prng_state)));
-
-	// Stick to the correct hemisphere
-	if(dot(rdir, lightVector) < 0.0)
-		rdir = -rdir;
-	
-	// Keep the shadows stay dynamic to some degree
-	// I mean, how blurry do you really need the edges to be?
-	if(shadow_sharpness < 0.5)
-		shadow_sharpness = 0.5;
-
-	lightVector = mix(rdir, lightVector, shadow_sharpness);
 
 	float shadow = 0.0;
 
@@ -263,48 +152,22 @@ float get_shadow_float(const vec3 light_pos, const vec3 normal, float shadow_sha
 
 		shadow = 0.0;
 
-		bool first_assignment = true;
+		float tmin = 0.001;
+		float tmax = 1000.0;
 
-		while(true)
-		{
-			// Set the depth so that the recursively-called closest hit shader does not
-			// form an infinite loop
-			//
-			// Note: This relies on the depth member not being initialized, containing
-			// random values. As such, there is a 1 in 2^64 chance that this will not
-			// work, producing a black pixel. If that's not good enough for your standards,
-			// then use a dvec4 or dmat4x4 to further decrease the odds of a black pixel 
-
-			rayPayload.recursive = true;
-
-			traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, biased_origin, 0.001, lightVector, 10000.0, 0);
-
-			if(rayPayload.distance == -1)
-				break;
-
-			biased_origin = biased_origin + lightVector*0.01;				
-
-			float first_dot = dot(normalize(lightVector), normalize(rayPayload.normal));
-			float first_opacity = rayPayload.opacity;
-
-			float rating = 1.0 - abs(first_dot);
-
-			rating = mix(rating, 1, first_opacity);
-
-			if(first_assignment || rating < shadow)
-			{
-				shadow = rating;
-				first_assignment = false;
-			}
-		}
-
-		shadow = 1 - shadow;
+		shadowed = true; // Make sure to set this to the default before tracing the ray!
+		traceRayEXT(topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT, 0xFF, 0, 0, 1, biased_origin, tmin, lightVector, tmax, 2);
+		
+		if(shadowed)
+			shadow = 0;
+		else
+			shadow = 1;
 	}
 
 	// Restore the payload after we've traced some rays
 	rayPayload = r;
 
-	return shadow;//clamp(shadow, 0.0, 1.0);
+	return shadow;
 }
 
 
@@ -354,11 +217,9 @@ void main()
 
 		for (int i = 0; i < max_lights; i++)
 		{
-			float s = get_shadow_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);	
-			float c = get_caustic_float(ubo.light_positions[i].xyz, rayPayload.normal, rayPayload.reflector);
+			float s = get_shadow_float(ubo.light_positions[i].xyz, rayPayload.normal);
 
 			rayPayload.color += s*phongModelDiffAndSpec(true, rayPayload.reflector, color, ubo.light_colors[i].rgb, ubo.light_positions[i].xyz, pos, rayPayload.normal);
-			rayPayload.color += c*ubo.light_colors[i].rgb;
 		}
 	}
 }

@@ -92,7 +92,7 @@ float stepAndOutputRNGFloat(inout uint rngState)
   return float(word) / 4294967295.0f;
 }
 
-
+/*
 bool get_shadow(vec3 wro, vec3 wrd, float hitt, const vec3 light_pos, const vec3 normal, float shadow_sharpness)
 {
 	vec3 lightVector = normalize(light_pos);
@@ -116,7 +116,7 @@ bool get_shadow(vec3 wro, vec3 wrd, float hitt, const vec3 light_pos, const vec3
 
 	return shadow;
 }
-
+*/
 
 
 // Max. number of recursion is passed via a specialization constant
@@ -288,8 +288,8 @@ float get_ray0(const int channel, const float eta)
 				// If partial reflection then do glossy	
 				float refl = 1.0;
 
-				if(rays[i].parent_id != -1)
-					refl = rays[rays[i].parent_id].reflection_constant;
+				//if(rays[i].parent_id != -1)
+				//	refl = rays[rays[i].parent_id].reflection_constant;
 
 				if(rays[i].external_reflection_ray && refl != 1.0)
 				{
@@ -315,11 +315,12 @@ float get_ray0(const int channel, const float eta)
 
 
 
-
+				
 				// Do some fog in an AABB
 				float dist_color = 0.0;
 				float dist_opacity = 0.0;
 
+				/*
 				if(rays[i].external_reflection_ray || rays[i].external_refraction_ray)
 				{
 					float t0 = 0.0;
@@ -392,7 +393,7 @@ float get_ray0(const int channel, const float eta)
 					}
 				}
 
-
+				*/ // do fog
 
 
 
